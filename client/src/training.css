@@ -207,6 +207,26 @@
 .tg-spin{width:34px; height:34px; border-radius:50%; border:3px solid var(--tg-line); border-bottom-color:var(--tg-accent); animation:tg-spin 1s linear infinite; margin:0 auto .9rem;}
 @keyframes tg-spin{to{transform:rotate(360deg);}}
 
+/* ---- Text area (persona description) ---- */
+textarea.tg-input{resize:vertical; min-height:5.5rem; font-family:var(--tg-sans); line-height:1.5;}
+
+/* ---- Comparison board (3 questions × 3 perspectives) ---- */
+.tg-board{display:flex; flex-direction:column; gap:1.1rem;}
+.tg-board-q{background:var(--tg-surface); border:1px solid var(--tg-line); border-radius:14px; padding:1.15rem 1.25rem;}
+.tg-board-qtitle{font-size:1.2rem; line-height:1.25; margin-bottom:1rem;}
+.tg-board-cells{display:grid; grid-template-columns:repeat(3,1fr); gap:.7rem;}
+@media (max-width:680px){.tg-board-cells{grid-template-columns:1fr;}}
+.tg-board-cell{
+  background:var(--tg-surface-2); border:1px solid var(--tg-line); border-left-width:3px; border-radius:10px;
+  padding:.85rem .95rem; display:flex; flex-direction:column; gap:.4rem;
+}
+.tg-board-cell .who{font-family:var(--tg-mono); font-size:.64rem; letter-spacing:.1em; text-transform:uppercase; color:var(--tg-ink-soft);}
+.tg-board-cell .ans{font-size:1.05rem; line-height:1.25; color:var(--tg-ink);}
+.tg-board-cell.empty .ans{color:var(--tg-ink-soft); font-style:italic;}
+.tg-board-cell.col0{border-left-color:var(--tg-accent);}
+.tg-board-cell.col1{border-left-color:var(--tg-sage);}
+.tg-board-cell.col2{border-left-color:var(--tg-ink-soft);}
+
 @media (prefers-reduced-motion:reduce){
   .tg-app *, .tg-spin{transition:none !important; animation:none !important;}
 }

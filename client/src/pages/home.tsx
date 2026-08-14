@@ -14,7 +14,7 @@ export default function Home() {
 
   const rememberName = (roomCode: string) => {
     try {
-      sessionStorage.setItem(`tg_name_${roomCode}`, name.trim());
+      sessionStorage.setItem(`ls_name_${roomCode}`, name.trim());
     } catch {
       /* ignore */
     }
@@ -38,7 +38,7 @@ export default function Home() {
     setBusy("join");
     const room = code.trim().toUpperCase();
     connectSocket();
-    getSocket().emit("join_room", room, name.trim(), "player", (ok: boolean, err?: string) => {
+    getSocket().emit("join_room", room, name.trim(), "participant", (ok: boolean, err?: string) => {
       setBusy("");
       if (ok) {
         rememberName(room);
@@ -55,12 +55,12 @@ export default function Home() {
         <header className="tg-hero">
           <div className="tg-tags">
             <span className="tg-tag">A reflection warm-up</span>
-            <span className="tg-tag">2–5 players + facilitator</span>
+            <span className="tg-tag">Solo · with a facilitator</span>
           </div>
           <h1>Imagine the perfect training exists</h1>
           <blockquote className="tg-quote">
             <em>“{FRAMING.intro}”</em>
-            <span>{FRAMING.note}</span>
+            <span>You’ll answer three questions from three perspectives — then compare.</span>
           </blockquote>
         </header>
 
@@ -80,14 +80,14 @@ export default function Home() {
           <section className="tg-door primary">
             <span className="tg-eyebrow">For the facilitator</span>
             <h2>Start a session</h2>
-            <p>Create the room, share the code, and steer the group through the three rounds.</p>
+            <p>Create the room, share the code, and follow along live as your participant answers.</p>
             <button className="tg-btn block" onClick={handleStart} disabled={busy !== ""}>
               {busy === "create" ? "Creating…" : "Start a session →"}
             </button>
           </section>
 
           <section className="tg-door">
-            <span className="tg-eyebrow">For everyone else</span>
+            <span className="tg-eyebrow">For the participant</span>
             <h2>Join a session</h2>
             <p>Enter the code your facilitator shared, add your name, and you’re in.</p>
             <div className="tg-field">

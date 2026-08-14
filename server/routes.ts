@@ -12,70 +12,50 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   const io: TypedServer = new SocketIOServer(httpServer, {
     cors: { origin: "*", methods: ["GET", "POST"] },
-    // Tolerate short network hiccups before flipping a client "offline".
     pingInterval: 25000,
     pingTimeout: 40000,
   });
 
-  function emitGameState(roomCode: string): void {
+  function emit(roomCode: string): void {
     const state = storage.getRoom(roomCode);
     if (state) io.to(roomCode).emit("game_state", state);
   }
 
   io.on("connection", (socket: TypedSocket) => {
-    console.log(`[Socket.IO] Client connected: ${socket.id}`);
-
-    // Facilitator creates a room.
     socket.on("create_room", (name: string, callback: (roomCode: string) => void) => {
       try {
         const roomCode = storage.createRoom(socket.id, name.trim() || "Facilitator");
         socket.join(roomCode);
-        console.log(`[Socket.IO] Room ${roomCode} created by facilitator ${name}`);
         callback(roomCode);
-        emitGameState(roomCode);
+        emit(roomCode);
       } catch (error) {
         console.error("[Socket.IO] create_room error:", error);
         socket.emit("error", "Failed to create room");
       }
     });
 
-    // Player or facilitator joins an existing room.
     socket.on(
       "join_room",
-      (roomCode: string, name: string, role: Role, callback: (success: boolean, error?: string) => void) => {
+      (roomCode: string, name: string, role: Role, callback: (ok: boolean, err?: string) => void) => {
         try {
           const room = storage.getRoom(roomCode);
           if (!room) return callback(false, "Room not found");
-
           socket.join(roomCode);
 
           const res =
             role === "facilitator"
               ? storage.joinFacilitator(roomCode, socket.id, name.trim() || "Facilitator")
-              : storage.addOrReconnectPlayer(roomCode, socket.id, name.trim());
+              : storage.joinParticipant(roomCode, socket.id, name.trim());
 
           if (!res.ok) {
             socket.leave(roomCode);
-            switch (res.reason) {
-              case "not_found":
-                return callback(false, "Room not found");
-              case "full":
-                return callback(false, "This session is full (up to 5 players).");
-              case "not_waiting":
-                return callback(false, "The session has already started.");
-              case "duplicate_name":
-                return callback(false, "That name is already taken — please pick another.");
-              default:
-                return callback(false, "Unable to join the session.");
-            }
-          }
-
-          if (res.action === "joined" && role === "player") {
-            socket.to(roomCode).emit("player_joined", name.trim());
+            if (res.reason === "not_found") return callback(false, "Room not found");
+            if (res.reason === "taken") return callback(false, "This session already has a participant.");
+            return callback(false, "Unable to join the session.");
           }
 
           callback(true);
-          emitGameState(roomCode);
+          emit(roomCode);
         } catch (error) {
           console.error("[Socket.IO] join_room error:", error);
           callback(false, "An error occurred while joining the session");
@@ -83,56 +63,46 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
     );
 
-    // Facilitator starts the game.
-    socket.on("start_game", () => {
+    socket.on("start", () => {
       const room = storage.getRoomByAnyId(socket.id);
       if (!room) return socket.emit("error", "You are not in a session");
-      if (!storage.startGame(room.roomCode, socket.id)) {
-        return socket.emit("error", "Can't start yet — you need at least 2 players.");
+      if (!storage.start(room.roomCode, socket.id)) {
+        return socket.emit("error", "Can't start yet — waiting for a participant to join.");
       }
-      emitGameState(room.roomCode);
+      emit(room.roomCode);
     });
 
-    // A player locks in their pick for the round.
-    socket.on("choose", (optionIndex: number) => {
-      const room = storage.getRoomByPlayerId(socket.id);
-      if (!room) return socket.emit("error", "You are not in a session");
-      if (!storage.choose(room.roomCode, socket.id, optionIndex)) {
-        return socket.emit("error", "Couldn't record your choice.");
+    socket.on("set_step", (step: number) => {
+      const room = storage.getRoomByAnyId(socket.id);
+      if (room && storage.setStep(room.roomCode, socket.id, step)) emit(room.roomCode);
+    });
+
+    socket.on("set_answer", (perspective: number, question: number, optionIndex: number) => {
+      const room = storage.getRoomByAnyId(socket.id);
+      if (room && storage.setAnswer(room.roomCode, socket.id, perspective, question, optionIndex)) {
+        emit(room.roomCode);
       }
-      emitGameState(room.roomCode);
     });
 
-    // Facilitator reveals early (fallback if someone is stuck / offline).
-    socket.on("reveal_now", () => {
+    socket.on("set_person", (label: string) => {
       const room = storage.getRoomByAnyId(socket.id);
-      if (!room) return;
-      if (storage.revealNow(room.roomCode, socket.id)) emitGameState(room.roomCode);
+      if (room && storage.setPerson(room.roomCode, socket.id, label)) emit(room.roomCode);
     });
 
-    // Facilitator advances to the next round (or ends the session).
-    socket.on("next_round", () => {
+    socket.on("set_persona", (name: string, description: string) => {
       const room = storage.getRoomByAnyId(socket.id);
-      if (!room) return;
-      if (storage.nextRound(room.roomCode, socket.id)) emitGameState(room.roomCode);
+      if (room && storage.setPersona(room.roomCode, socket.id, name, description)) emit(room.roomCode);
     });
 
-    // Facilitator runs it again with the same group.
     socket.on("restart", () => {
       const room = storage.getRoomByAnyId(socket.id);
-      if (!room) return;
-      if (storage.restart(room.roomCode, socket.id)) emitGameState(room.roomCode);
+      if (room && storage.restart(room.roomCode, socket.id)) emit(room.roomCode);
     });
 
     socket.on("disconnect", () => {
-      console.log(`[Socket.IO] Client disconnected: ${socket.id}`);
       try {
         const room = storage.setConnected(socket.id, false);
-        if (room) {
-          const player = room.players.find((p) => p.id === socket.id);
-          if (player) socket.to(room.roomCode).emit("player_left", player.name);
-          emitGameState(room.roomCode);
-        }
+        if (room) emit(room.roomCode);
       } catch (error) {
         console.error("[Socket.IO] disconnect error:", error);
       }

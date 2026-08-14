@@ -1,7 +1,19 @@
+import { type ReactNode } from "react";
 import { useRoute } from "wouter";
 import { useRoom } from "@/lib/useRoom";
-import { RoomBar, Roster, Reveal, Pips } from "@/components/game-parts";
-import { FRAMING, ROUNDS } from "@shared/content";
+import { RoomBar, Board } from "@/components/game-parts";
+import { FRAMING, stepInfo } from "@shared/content";
+
+function liveLabel(step: number, person: string, personaName: string): string {
+  const info = stepInfo(step);
+  if (info.kind === "intro") return "Reading the intro";
+  if (info.kind === "person") return "Choosing a second perspective";
+  if (info.kind === "persona") return "Creating a learning persona";
+  if (info.kind === "board") return "Reviewing the board";
+  const persp =
+    info.perspective === 0 ? "As themselves" : info.perspective === 1 ? `As ${person || "someone else"}` : `As ${personaName || "the persona"}`;
+  return `${persp} · Question ${info.question + 1} of 3`;
+}
 
 export default function Facilitator() {
   const [, params] = useRoute("/facilitator/:roomCode");
@@ -20,98 +32,70 @@ export default function Facilitator() {
     );
   }
 
-  const connected = gameState.players.filter((p) => p.isConnected).length;
-  const canStart = connected >= 2;
-  const content = ROUNDS[gameState.round - 1];
-  const isLastRound = gameState.round >= gameState.totalRounds;
+  const participant = gameState.participant;
+  const ready = !!participant?.isConnected;
 
-  return (
-    <div className="tg-app">
-      <div className="tg-wrap">
-        <RoomBar
-          roleLabel={`Facilitator · ${room.name}`}
-          roomCode={roomCode}
-          onLeave={room.leave}
-          onCopy={room.copyCode}
-        />
+  const bar = (
+    <RoomBar roleLabel={`Facilitator · ${room.name}`} roomCode={roomCode} onLeave={room.leave} onCopy={room.copyCode} />
+  );
+  const shell = (children: ReactNode) => (
+    <div className="tg-app"><div className="tg-wrap">{bar}{children}</div></div>
+  );
 
-        {/* Lobby */}
-        {gameState.phase === "waiting" && (
-          <>
-            <div className="tg-framing">
-              <span className="tg-eyebrow">Before we begin</span>
-              <p className="intro tg-serif">{FRAMING.intro}</p>
-              <p className="note">Share the room code <strong>{roomCode}</strong> — players join from the home page.</p>
-            </div>
-            <div className="tg-section-label">
-              <span className="tg-eyebrow">In the room ({connected})</span>
-            </div>
-            <Roster players={gameState.players} />
-            <div className="tg-controls">
-              <div className="buttons">
-                <button className="tg-btn" onClick={room.start} disabled={!canStart}>
-                  {canStart ? "Start the session →" : "Need at least 2 players"}
-                </button>
-              </div>
-            </div>
-          </>
-        )}
-
-        {/* Picking (facilitator watches who has locked in) */}
-        {gameState.phase === "selecting" && content && (
-          <>
-            <div className="tg-round-line">
-              <span className="tg-eyebrow">Round {gameState.round} of {gameState.totalRounds}</span>
-              <Pips round={gameState.round} total={gameState.totalRounds} />
-            </div>
-            <p className="tg-standing">{FRAMING.standing}</p>
-            <h1 className="tg-topic">{content.topic}</h1>
-
-            <div className="tg-section-label">
-              <span className="tg-eyebrow">Choosing…</span>
-              <span className="tg-count">{gameState.choices.length} of {connected} locked in</span>
-            </div>
-            <Roster players={gameState.players} choices={gameState.choices} showChoiceState />
-
-            <div className="tg-controls">
-              <div className="buttons">
-                <button className="tg-btn ghost" onClick={room.revealNow}>Reveal now</button>
-              </div>
-            </div>
-          </>
-        )}
-
-        {/* Reveal (the stage to lead discussion from) */}
-        {gameState.phase === "revealing" && (
-          <>
-            <div className="tg-round-line">
-              <span className="tg-eyebrow">Round {gameState.round} of {gameState.totalRounds} · Reveal</span>
-              <Pips round={gameState.round} total={gameState.totalRounds} />
-            </div>
-            <Reveal round={gameState.round} players={gameState.players} choices={gameState.choices} />
-            <div className="tg-controls">
-              <div className="buttons">
-                <button className="tg-btn" onClick={room.nextRound}>
-                  {isLastRound ? "Finish session →" : "Next round →"}
-                </button>
-              </div>
-            </div>
-          </>
-        )}
-
-        {/* Ended */}
-        {gameState.phase === "ended" && (
-          <div className="tg-ended">
-            <span className="tg-eyebrow">That’s a wrap</span>
-            <h2 className="tg-serif">Session complete.</h2>
-            <p>The group has shared what they each hope to find. You can run it again with the same people, or close the room.</p>
-            <div className="buttons" style={{ display: "flex", gap: ".7rem", flexWrap: "wrap", justifyContent: "center" }}>
-              <button className="tg-btn" onClick={room.restart}>Run it again</button>
-              <button className="tg-btn ghost" onClick={room.leave}>Leave session</button>
-            </div>
+  // ---- Lobby ----
+  if (gameState.phase === "waiting") {
+    return shell(
+      <>
+        <div className="tg-framing">
+          <span className="tg-eyebrow">Before we begin</span>
+          <p className="intro tg-serif">{FRAMING.intro}</p>
+          <p className="note">Share the room code <strong>{roomCode}</strong> — your participant joins from the home page.</p>
+        </div>
+        <div className="tg-section-label"><span className="tg-eyebrow">Participant</span></div>
+        {participant ? (
+          <div className="tg-roster">
+            <span className={`tg-pchip ${!participant.isConnected ? "off" : ""}`}>
+              <span className="av v0">{participant.name.charAt(0).toUpperCase()}</span>
+              {participant.name}
+            </span>
           </div>
+        ) : (
+          <p className="tg-empty">Waiting for your participant to join…</p>
         )}
+        <div className="tg-controls">
+          <div className="buttons">
+            <button className="tg-btn" onClick={room.start} disabled={!ready}>
+              {ready ? "Start the session →" : "Waiting for a participant"}
+            </button>
+          </div>
+        </div>
+      </>
+    );
+  }
+
+  // ---- Live mirror + board ----
+  const onBoard = gameState.phase === "board";
+  return shell(
+    <>
+      <div className="tg-round-line">
+        <span className="tg-eyebrow">{onBoard ? "Complete" : "Live"} · {liveLabel(gameState.step, gameState.person, gameState.persona.name)}</span>
       </div>
-    </div>
+      <h1 className="tg-topic" style={{ marginBottom: "1.6rem" }}>
+        {onBoard ? "How their answers compare" : "Following along"}
+      </h1>
+      {gameState.persona.description && (
+        <p className="tg-standing" style={{ marginBottom: "1.4rem" }}>
+          Persona — {gameState.persona.name}: {gameState.persona.description}
+        </p>
+      )}
+      <Board answers={gameState.answers} person={gameState.person} persona={gameState.persona} />
+      {onBoard && (
+        <div className="tg-controls">
+          <div className="buttons">
+            <button className="tg-btn" onClick={room.restart}>Run it again</button>
+          </div>
+        </div>
+      )}
+    </>
   );
 }

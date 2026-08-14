@@ -4,9 +4,8 @@ import { getSocket, connectSocket, disconnectSocket } from "@/lib/socket";
 import type { GameState, Role } from "@shared/schema";
 
 /**
- * Shared room connection for both the player and facilitator views.
- * Handles connect, join, reconnection (keeping the same name so the returning
- * person reclaims their seat) and exposes the actions each view needs.
+ * Shared room connection for the participant and the (observing) facilitator.
+ * Keeps the same name across reconnects so the returning person reclaims their seat.
  */
 export function useRoom(roomCode: string, role: Role) {
   const [, setLocation] = useLocation();
@@ -16,7 +15,7 @@ export function useRoom(roomCode: string, role: Role) {
 
   const search = new URLSearchParams(window.location.search);
   const rawName = (search.get("name") || "").trim();
-  const nameKey = `tg_name_${roomCode}`;
+  const nameKey = `ls_name_${roomCode}`;
   const storedName =
     typeof sessionStorage !== "undefined" ? (sessionStorage.getItem(nameKey) || "").trim() : "";
   const name = rawName || storedName || (role === "facilitator" ? "Facilitator" : "");
@@ -26,9 +25,7 @@ export function useRoom(roomCode: string, role: Role) {
       setLocation("/");
       return;
     }
-    // A player who arrives without a name (e.g. opened a bare room link) is sent
-    // back to the entry screen with the code prefilled, so they can name themselves.
-    if (role === "player" && !name) {
+    if (role === "participant" && !name) {
       setLocation(`/?code=${roomCode}`);
       return;
     }
@@ -38,7 +35,6 @@ export function useRoom(roomCode: string, role: Role) {
 
     const onState = (state: GameState) => setGameState(state);
     const onError = (message: string) => setError(message);
-
     socket.on("game_state", onState);
     socket.on("error", onError);
 
@@ -65,13 +61,12 @@ export function useRoom(roomCode: string, role: Role) {
     };
   }, [roomCode, role, name, setLocation]);
 
-  // Keep our name for this room so a reload / reconnect keeps the same identity.
   useEffect(() => {
     if (roomCode && name) {
       try {
         sessionStorage.setItem(nameKey, name);
       } catch {
-        /* ignore storage errors */
+        /* ignore */
       }
     }
   }, [roomCode, name, nameKey]);
@@ -82,11 +77,13 @@ export function useRoom(roomCode: string, role: Role) {
     myId,
     name,
     error,
-    clearError: () => setError(""),
-    start: () => socket.emit("start_game"),
-    choose: (i: number) => socket.emit("choose", i),
-    revealNow: () => socket.emit("reveal_now"),
-    nextRound: () => socket.emit("next_round"),
+    start: () => socket.emit("start"),
+    setStep: (step: number) => socket.emit("set_step", step),
+    setAnswer: (perspective: number, question: number, optionIndex: number) =>
+      socket.emit("set_answer", perspective, question, optionIndex),
+    setPerson: (label: string) => socket.emit("set_person", label),
+    setPersona: (personaName: string, description: string) =>
+      socket.emit("set_persona", personaName, description),
     restart: () => socket.emit("restart"),
     leave: () => setLocation("/"),
     copyCode: () => {
