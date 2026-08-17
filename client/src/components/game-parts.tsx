@@ -3,9 +3,9 @@ import { useState } from "react";
 import type { Answer, Persona } from "@shared/schema";
 import { ROUNDS } from "@shared/content";
 
-/** Column labels for the three perspectives, using the participant's own inputs. */
-export function perspectiveLabels(person: string, persona: Persona): string[] {
-  return ["You", person || "Someone else", persona.name || "Your persona"];
+/** Column labels for the three perspectives. Third is always "Persona". */
+export function perspectiveLabels(person: string, _persona: Persona): string[] {
+  return ["You", person || "Someone else", "Persona"];
 }
 
 export function answerText(answers: Answer[], perspective: number, question: number): string | null {
@@ -56,8 +56,8 @@ export function Board({ answers, person, persona }: { answers: Answer[]; person:
   return (
     <div className="tg-board">
       {ROUNDS.map((r, q) => (
-        <div className="tg-board-q" key={q}>
-          <div className="tg-board-qtitle tg-serif">{r.topic}</div>
+        <div className="tg-board-row" key={q}>
+          <div className="tg-board-qlabel">{r.topic}</div>
           <div className="tg-board-cells">
             {[0, 1, 2].map((p) => {
               const text = answerText(answers, p, q);

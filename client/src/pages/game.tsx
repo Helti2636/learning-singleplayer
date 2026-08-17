@@ -4,6 +4,10 @@ import { useRoom } from "@/lib/useRoom";
 import { RoomBar, Board } from "@/components/game-parts";
 import { ROUNDS, PERSON_PRESETS, stepInfo } from "@shared/content";
 
+// Presets that reveal a name field when picked (so the board shows a real name).
+const COLLEAGUE = "Your most memorable colleague";
+const DIRECT_PRESETS = PERSON_PRESETS.filter((p) => p !== COLLEAGUE); // no input needed
+
 function perspectiveLabel(perspective: number, person: string, personaName: string): string {
   if (perspective === 0) return "As yourself";
   if (perspective === 1) return `As ${person || "someone else"}`;
@@ -17,8 +21,8 @@ export default function Game() {
   const { gameState } = room;
 
   // Local input state for the two setup screens (participant owns these).
-  const [someoneElse, setSomeoneElse] = useState(false);
-  const [customPerson, setCustomPerson] = useState("");
+  const [inputMode, setInputMode] = useState<"" | "colleague" | "custom">("");
+  const [nameText, setNameText] = useState("");
   const [personaName, setPersonaName] = useState("");
   const [personaDesc, setPersonaDesc] = useState("");
   const [seeded, setSeeded] = useState(false);
@@ -37,9 +41,9 @@ export default function Game() {
   // Seed local fields from server state once (e.g. after a reload).
   if (!seeded && gameState.phase !== "waiting") {
     setSeeded(true);
-    if (gameState.person && !PERSON_PRESETS.includes(gameState.person)) {
-      setSomeoneElse(true);
-      setCustomPerson(gameState.person);
+    if (gameState.person && !DIRECT_PRESETS.includes(gameState.person)) {
+      setInputMode("custom");
+      setNameText(gameState.person);
     }
     setPersonaName(gameState.persona.name);
     setPersonaDesc(gameState.persona.description);
@@ -104,32 +108,44 @@ export default function Game() {
 
   // ---- Pick the "someone else" perspective ----
   if (info.kind === "person") {
-    const chooseCustom = () => { setSomeoneElse(true); room.setPerson(customPerson.trim()); };
     const canNext = gameState.person.trim() !== "";
+    const showInput = inputMode === "colleague" || inputMode === "custom";
     return shell(
       <>
         <div className="tg-round-line"><span className="tg-eyebrow">Perspective 2 of 3</span></div>
         <h1 className="tg-topic">Now answer as someone else. Who comes to mind?</h1>
         <div className="tg-options">
           {PERSON_PRESETS.map((preset, i) => {
-            const sel = !someoneElse && gameState.person === preset;
+            if (preset === COLLEAGUE) {
+              return (
+                <button key={i} className={`tg-opt-card ${inputMode === "colleague" ? "sel" : ""}`}
+                  onClick={() => { setInputMode("colleague"); room.setPerson(nameText.trim()); }}>
+                  {preset}
+                </button>
+              );
+            }
+            const sel = inputMode === "" && gameState.person === preset;
             return (
               <button key={i} className={`tg-opt-card ${sel ? "sel" : ""}`}
-                onClick={() => { setSomeoneElse(false); room.setPerson(preset); }}>
+                onClick={() => { setInputMode(""); setNameText(""); room.setPerson(preset); }}>
                 {preset}
               </button>
             );
           })}
-          <button className={`tg-opt-card ${someoneElse ? "sel" : ""}`} onClick={chooseCustom}>
+          <button className={`tg-opt-card ${inputMode === "custom" ? "sel" : ""}`}
+            onClick={() => { setInputMode("custom"); room.setPerson(nameText.trim()); }}>
             Someone else…
           </button>
         </div>
-        {someoneElse && (
+        {showInput && (
           <div className="tg-field" style={{ marginTop: "1.2rem", maxWidth: "28rem" }}>
-            <label className="tg-label" htmlFor="who">Their name or role</label>
-            <input id="who" className="tg-input" placeholder="e.g. my neighbour, my old teacher…"
-              value={customPerson} maxLength={40}
-              onChange={(e) => { setCustomPerson(e.target.value); room.setPerson(e.target.value.trim()); }} />
+            <label className="tg-label" htmlFor="who">
+              {inputMode === "colleague" ? "Your colleague’s name" : "Their name or role"}
+            </label>
+            <input id="who" className="tg-input" autoFocus
+              placeholder={inputMode === "colleague" ? "e.g. Anna" : "e.g. my neighbour, my old teacher…"}
+              value={nameText} maxLength={40}
+              onChange={(e) => { setNameText(e.target.value); room.setPerson(e.target.value.trim()); }} />
           </div>
         )}
         <NavBar onBack={() => goto(step - 1)} onNext={() => goto(step + 1)} nextDisabled={!canNext} />
