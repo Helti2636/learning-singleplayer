@@ -165,7 +165,7 @@ export default function Game() {
         </p>
         <div className="tg-field" style={{ maxWidth: "34rem", marginBottom: "1rem" }}>
           <label className="tg-label" htmlFor="pname">Persona name</label>
-          <input id="pname" className="tg-input" placeholder="e.g. Sofia, the busy team lead"
+          <input id="pname" className="tg-input" placeholder="e.g. Priya, the busy team lead"
             value={personaName} maxLength={40}
             onChange={(e) => { setPersonaName(e.target.value); room.setPersona(e.target.value, personaDesc); }} />
         </div>

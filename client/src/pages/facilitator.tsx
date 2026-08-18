@@ -2,7 +2,8 @@ import { type ReactNode } from "react";
 import { useRoute } from "wouter";
 import { useRoom } from "@/lib/useRoom";
 import { RoomBar, Board } from "@/components/game-parts";
-import { FRAMING, stepInfo } from "@shared/content";
+import { FRAMING, stepInfo, ROUNDS } from "@shared/content";
+import { printHtml, esc } from "@/lib/print";
 
 function liveLabel(step: number, person: string, personaName: string): string {
   const info = stepInfo(step);
@@ -75,6 +76,30 @@ export default function Facilitator() {
 
   // ---- Live mirror + board ----
   const onBoard = gameState.phase === "board";
+
+  const personaDoc = () =>
+    `<p class="k">Learning persona</p>
+     <h1>${esc(gameState.persona.name || "—")}</h1>
+     <p class="sub">A persona created in the reflection exercise</p>
+     <p class="persona-desc">${esc(gameState.persona.description || "(no description)")}</p>
+     <p class="foot">Saved ${esc(new Date().toLocaleString())}</p>`;
+
+  const boardDoc = () => {
+    const labels = ["You", gameState.person || "Someone else", "Persona"];
+    const rows = ROUNDS.map((r, q) => {
+      const cells = [0, 1, 2].map((p) => {
+        const a = gameState.answers.find((x) => x.perspective === p && x.question === q);
+        return a ? r.options[a.optionIndex] : "—";
+      });
+      return `<tr><td class="q">${esc(r.topic)}</td>${cells.map((c) => `<td>${esc(c)}</td>`).join("")}</tr>`;
+    }).join("");
+    return `<p class="k">Comparison board</p>
+      <h1>How the answers compare</h1>
+      <p class="sub">Persona: ${esc(gameState.persona.name || "—")}</p>
+      <table><thead><tr><th></th>${labels.map((l) => `<th>${esc(l)}</th>`).join("")}</tr></thead><tbody>${rows}</tbody></table>
+      <p class="foot">Saved ${esc(new Date().toLocaleString())}</p>`;
+  };
+
   return shell(
     <>
       <div className="tg-round-line">
@@ -92,6 +117,8 @@ export default function Facilitator() {
       {onBoard && (
         <div className="tg-controls">
           <div className="buttons">
+            <button className="tg-btn ghost" onClick={() => printHtml("Learning persona", personaDoc())}>Save persona (PDF)</button>
+            <button className="tg-btn ghost" onClick={() => printHtml("Comparison board", boardDoc())}>Save board (PDF)</button>
             <button className="tg-btn" onClick={room.restart}>Run it again</button>
           </div>
         </div>
