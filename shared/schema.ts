@@ -35,6 +35,7 @@ export const gameStateSchema = z.object({
   totalSteps: z.number(),
   person: z.string(),      // the perspective-2 label ("as someone else")
   persona: personaSchema,  // the perspective-3 learning persona
+  controllerId: z.string(),// during the persona step: who holds the pen (participant by default, or facilitator)
   answers: z.array(answerSchema),
 });
 export type GameState = z.infer<typeof gameStateSchema>;
@@ -56,5 +57,6 @@ export interface ClientToServerEvents {
   set_answer: (perspective: number, question: number, optionIndex: number) => void;
   set_person: (label: string) => void;
   set_persona: (name: string, description: string) => void;
+  take_control: () => void;   // during the persona step: grab the pen (participant or facilitator)
   restart: () => void;
 }

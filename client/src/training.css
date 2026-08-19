@@ -71,6 +71,11 @@
 .tg-input.code{font-family:var(--tg-mono); letter-spacing:.22em; text-transform:uppercase;}
 .tg-input::placeholder{color:var(--tg-ink-soft); opacity:.7; letter-spacing:normal;}
 
+/* ---- Live persona (the non-typing side watches it take shape) ---- */
+.ls-persona-live{background:var(--tg-surface); border:1px solid var(--tg-line); border-radius:16px; padding:1.4rem 1.6rem; max-width:40rem; margin-bottom:1.6rem;}
+.ls-persona-live .live-name{font-size:1.6rem; color:var(--tg-ink); min-height:1.5em; line-height:1.2;}
+.ls-persona-live .live-desc{margin-top:.6rem; color:var(--tg-ink-soft); white-space:pre-wrap;}
+
 /* ---- Home ---- */
 .tg-hero{border-bottom:1px solid var(--tg-line); padding-bottom:2.2rem; margin-bottom:2.4rem;}
 .tg-tags{display:flex; gap:.6rem; margin-bottom:1.2rem; flex-wrap:wrap;}

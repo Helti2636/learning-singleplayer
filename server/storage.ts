@@ -1,5 +1,5 @@
 import type { GameState } from "@shared/schema";
-import { TOTAL_STEPS, BOARD_STEP, ROUNDS } from "@shared/content";
+import { TOTAL_STEPS, BOARD_STEP, ROUNDS, stepInfo } from "@shared/content";
 
 export function generateRoomCode(): string {
   const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
@@ -26,6 +26,7 @@ export class MemStorage {
       totalSteps: TOTAL_STEPS,
       person: "",
       persona: { name: "", description: "" },
+      controllerId: "",
       answers: [],
     };
     this.rooms.set(roomCode, state);
@@ -56,6 +57,7 @@ export class MemStorage {
         return { ok: true, action: "already_member" };
       }
       if (p.name === name) {
+        if (room.controllerId === p.id) room.controllerId = socketId; // keep the pen after a reconnect
         p.id = socketId;
         p.isConnected = true;
         return { ok: true, action: "reconnected" };
@@ -99,6 +101,7 @@ export class MemStorage {
     if (!room.participant?.isConnected) return false;
     room.phase = "playing";
     room.step = 0;
+    room.controllerId = room.participant.id; // participant holds the pen by default
     return true;
   }
 
@@ -109,6 +112,8 @@ export class MemStorage {
     const clamped = Math.max(0, Math.min(BOARD_STEP, Math.floor(step)));
     room.step = clamped;
     room.phase = clamped >= BOARD_STEP ? "board" : "playing";
+    // Each time the participant navigates, they hold the pen by default; the facilitator can take control on the persona step.
+    room.controllerId = room.participant?.id ?? "";
     return true;
   }
 
@@ -140,8 +145,20 @@ export class MemStorage {
 
   setPersona(roomCode: string, byId: string, name: string, description: string): boolean {
     const room = this.rooms.get(roomCode);
-    if (!room || !this.isParticipant(room, byId)) return false;
+    if (!room) return false;
+    // Only the current controller may type the persona (participant by default, or the facilitator after take control).
+    const controller = room.controllerId || room.participant?.id;
+    if (byId !== controller) return false;
     room.persona = { name: name.slice(0, 60), description: description.slice(0, 600) };
+    return true;
+  }
+
+  /** Persona step only: grab the pen — either the participant or the facilitator. */
+  takeControl(roomCode: string, id: string): boolean {
+    const room = this.rooms.get(roomCode);
+    if (!room || stepInfo(room.step).kind !== "persona") return false;
+    if (!this.isFacilitator(room, id) && !this.isParticipant(room, id)) return false;
+    room.controllerId = id;
     return true;
   }
 
@@ -154,6 +171,7 @@ export class MemStorage {
     room.step = 0;
     room.person = "";
     room.persona = { name: "", description: "" };
+    room.controllerId = room.participant?.id ?? "";
     room.answers = [];
     return true;
   }

@@ -84,6 +84,7 @@ export function useRoom(roomCode: string, role: Role) {
     setPerson: (label: string) => socket.emit("set_person", label),
     setPersona: (personaName: string, description: string) =>
       socket.emit("set_persona", personaName, description),
+    takeControl: () => socket.emit("take_control"),
     restart: () => socket.emit("restart"),
     leave: () => setLocation("/"),
     copyCode: () => {
