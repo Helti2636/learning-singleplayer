@@ -231,10 +231,11 @@ export function personaPlainText(p: PersonaData): string {
 const PQ = PERSONA_QUESTIONS.length;
 export const PERSONA_NAME_STEP = 8;
 export const PERSONA_Q_START = 9;
-export const PERSONA_COMMENT_STEP = PERSONA_Q_START + PQ; // 20
-const PERSPECTIVE2_START = PERSONA_COMMENT_STEP + 1;      // 21
-export const TOTAL_STEPS = PERSPECTIVE2_START + TOTAL_ROUNDS + 1; // 25
-export const BOARD_STEP = TOTAL_STEPS - 1;                        // 24
+export const PERSONA_COMMENT_STEP = PERSONA_Q_START + PQ;    // 20
+export const PERSONA_REVEAL_STEP = PERSONA_COMMENT_STEP + 1; // 21 — "meet your persona" break card
+const PERSPECTIVE2_START = PERSONA_REVEAL_STEP + 1;          // 22
+export const TOTAL_STEPS = PERSPECTIVE2_START + TOTAL_ROUNDS + 1; // 26
+export const BOARD_STEP = TOTAL_STEPS - 1;                        // 25
 
 export type StepKind =
   | "intro"
@@ -243,6 +244,7 @@ export type StepKind =
   | "personaName"
   | "personaQuestion"
   | "personaComment"
+  | "personaReveal"
   | "board";
 
 export function stepInfo(step: number): { kind: StepKind; perspective: number; question: number; personaIndex: number } {
@@ -254,7 +256,8 @@ export function stepInfo(step: number): { kind: StepKind; perspective: number; q
   if (step === PERSONA_NAME_STEP) return { kind: "personaName", perspective: 2, question: -1, personaIndex: -1 };
   if (step < PERSONA_COMMENT_STEP) return { kind: "personaQuestion", perspective: 2, question: -1, personaIndex: step - PERSONA_Q_START };
   if (step === PERSONA_COMMENT_STEP) return { kind: "personaComment", perspective: 2, question: -1, personaIndex: -1 };
-  return { kind: "question", perspective: 2, question: step - PERSPECTIVE2_START, personaIndex: -1 }; // 21-23
+  if (step === PERSONA_REVEAL_STEP) return { kind: "personaReveal", perspective: 2, question: -1, personaIndex: -1 };
+  return { kind: "question", perspective: 2, question: step - PERSPECTIVE2_START, personaIndex: -1 }; // 22-24
 }
 
 /** True for any of the persona-intake screens (name / questions / comment). */

@@ -69,12 +69,12 @@ export default function Game() {
   if (info.kind === "board") {
     return shell(
       <>
-        <div className="tg-round-line"><span className="tg-eyebrow">Your learning persona</span></div>
-        <h1 className="tg-topic" style={{ marginBottom: "1.4rem" }}>{gameState.persona.name || "Your persona"}</h1>
-        <PersonaOverview persona={gameState.persona} />
-        <div className="tg-round-line" style={{ marginTop: "2.4rem" }}><span className="tg-eyebrow">Your three perspectives, side by side</span></div>
+        <div className="tg-round-line"><span className="tg-eyebrow">Your three perspectives, side by side</span></div>
         <h1 className="tg-topic" style={{ marginBottom: "2rem" }}>How your answers compare</h1>
         <Board answers={gameState.answers} person={gameState.person} persona={gameState.persona} />
+        <div className="tg-round-line" style={{ marginTop: "2.4rem" }}><span className="tg-eyebrow">Your learning persona</span></div>
+        <h1 className="tg-topic" style={{ marginBottom: "1.4rem" }}>{gameState.persona.name || "Your persona"}</h1>
+        <PersonaOverview persona={gameState.persona} />
         <div className="tg-controls">
           <div className="buttons">
             <button className="tg-btn ghost" onClick={() => goto(step - 1)}>← Back</button>
@@ -172,6 +172,21 @@ export default function Game() {
             <button className="tg-btn" onClick={() => goto(step + 1)} disabled={nextDisabled}>Next →</button>
           </div>
         </div>
+      </>
+    );
+  }
+
+  // ---- Meet your persona (a short break before answering as them) ----
+  if (info.kind === "personaReveal") {
+    return shell(
+      <>
+        <div className="tg-round-line"><span className="tg-eyebrow">Meet your learning persona</span></div>
+        <h1 className="tg-topic" style={{ marginBottom: ".8rem" }}>{gameState.persona.name || "Your persona"}</h1>
+        <p className="tg-standing" style={{ marginBottom: "1.6rem" }}>
+          Take a moment — next you’ll answer the same three questions as {gameState.persona.name || "them"}.
+        </p>
+        <PersonaOverview persona={gameState.persona} />
+        <NavBar onBack={() => goto(step - 1)} onNext={() => goto(step + 1)} nextDisabled={false} />
       </>
     );
   }

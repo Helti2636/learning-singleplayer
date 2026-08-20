@@ -100,6 +100,17 @@ export default function Facilitator() {
     );
   }
 
+  // ---- Meet the persona (break card; facilitator mirrors it) ----
+  if (gameState.phase === "playing" && stepInfo(gameState.step).kind === "personaReveal") {
+    return shell(
+      <>
+        <div className="tg-round-line"><span className="tg-eyebrow">Meet the learning persona</span></div>
+        <h1 className="tg-topic" style={{ marginBottom: "1.4rem" }}>{persona.name || "The learning persona"}</h1>
+        <PersonaOverview persona={persona} />
+      </>
+    );
+  }
+
   // ---- Live mirror + board ----
   const onBoard = gameState.phase === "board";
 
@@ -148,11 +159,11 @@ export default function Facilitator() {
 
       {onBoard ? (
         <>
-          <h1 className="tg-topic" style={{ marginBottom: "1.4rem" }}>{persona.name || "The learning persona"}</h1>
-          <PersonaOverview persona={persona} />
-          <div className="tg-round-line" style={{ marginTop: "2.4rem" }}><span className="tg-eyebrow">The three perspectives, side by side</span></div>
           <h1 className="tg-topic" style={{ marginBottom: "1.4rem" }}>How their answers compare</h1>
           <Board answers={gameState.answers} person={gameState.person} persona={persona} />
+          <div className="tg-round-line" style={{ marginTop: "2.4rem" }}><span className="tg-eyebrow">The learning persona</span></div>
+          <h1 className="tg-topic" style={{ marginBottom: "1.4rem" }}>{persona.name || "The learning persona"}</h1>
+          <PersonaOverview persona={persona} />
           <div className="tg-controls">
             <div className="buttons">
               <button className="tg-btn" onClick={copyPersona}>{copied ? "Copied ✓" : "Copy persona"}</button>
