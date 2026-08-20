@@ -18,7 +18,9 @@ export type Answer = z.infer<typeof answerSchema>;
 
 export const personaSchema = z.object({
   name: z.string(),
-  description: z.string(),
+  answers: z.array(z.number()),  // one option index per persona question; -1 = unanswered
+  languageOther: z.string(),     // free text when "Primary Language" = Other
+  comment: z.string(),           // 12th open field
 });
 export type Persona = z.infer<typeof personaSchema>;
 
@@ -56,7 +58,7 @@ export interface ClientToServerEvents {
   set_step: (step: number) => void;                     // participant navigates
   set_answer: (perspective: number, question: number, optionIndex: number) => void;
   set_person: (label: string) => void;
-  set_persona: (name: string, description: string) => void;
-  take_control: () => void;   // during the persona step: grab the pen (participant or facilitator)
+  set_persona: (persona: Persona) => void;   // whole persona object (name, answers, languageOther, comment)
+  take_control: () => void;   // during the persona intake: grab the pen (participant or facilitator)
   restart: () => void;
 }

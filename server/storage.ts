@@ -1,5 +1,5 @@
-import type { GameState } from "@shared/schema";
-import { TOTAL_STEPS, BOARD_STEP, ROUNDS, stepInfo } from "@shared/content";
+import type { GameState, Persona } from "@shared/schema";
+import { TOTAL_STEPS, BOARD_STEP, ROUNDS, isPersonaStep, emptyPersona, PERSONA_QUESTIONS } from "@shared/content";
 
 export function generateRoomCode(): string {
   const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
@@ -25,7 +25,7 @@ export class MemStorage {
       step: 0,
       totalSteps: TOTAL_STEPS,
       person: "",
-      persona: { name: "", description: "" },
+      persona: emptyPersona(),
       controllerId: "",
       answers: [],
     };
@@ -107,13 +107,23 @@ export class MemStorage {
 
   setStep(roomCode: string, byId: string, step: number): boolean {
     const room = this.rooms.get(roomCode);
-    if (!room || !this.isParticipant(room, byId)) return false;
-    if (room.phase === "waiting") return false;
+    if (!room || room.phase === "waiting") return false;
     const clamped = Math.max(0, Math.min(BOARD_STEP, Math.floor(step)));
+    const fromIntake = isPersonaStep(room.step);
+    const toIntake = isPersonaStep(clamped);
+    // The participant always drives navigation; during the persona intake the
+    // facilitator may also step through (so they can fill it in after taking control).
+    const canNavigate = this.isParticipant(room, byId) || (this.isFacilitator(room, byId) && (fromIntake || toIntake));
+    if (!canNavigate) return false;
     room.step = clamped;
     room.phase = clamped >= BOARD_STEP ? "board" : "playing";
-    // Each time the participant navigates, they hold the pen by default; the facilitator can take control on the persona step.
-    room.controllerId = room.participant?.id ?? "";
+    // Controller lifecycle: the participant holds the pen by default. Keep whoever
+    // holds it while moving between intake screens; reset to the participant otherwise.
+    if (toIntake) {
+      if (!fromIntake) room.controllerId = room.participant?.id ?? "";
+    } else {
+      room.controllerId = room.participant?.id ?? "";
+    }
     return true;
   }
 
@@ -143,20 +153,30 @@ export class MemStorage {
     return true;
   }
 
-  setPersona(roomCode: string, byId: string, name: string, description: string): boolean {
+  setPersona(roomCode: string, byId: string, persona: Persona): boolean {
     const room = this.rooms.get(roomCode);
     if (!room) return false;
-    // Only the current controller may type the persona (participant by default, or the facilitator after take control).
+    // Only the current controller may edit (participant by default, or the facilitator after take control).
     const controller = room.controllerId || room.participant?.id;
     if (byId !== controller) return false;
-    room.persona = { name: name.slice(0, 60), description: description.slice(0, 600) };
+    // Validate & clamp against the question set.
+    const answers = PERSONA_QUESTIONS.map((q, i) => {
+      const v = Math.floor(Number(persona?.answers?.[i]));
+      return Number.isFinite(v) && v >= 0 && v < q.options.length ? v : -1;
+    });
+    room.persona = {
+      name: String(persona?.name ?? "").slice(0, 60),
+      answers,
+      languageOther: String(persona?.languageOther ?? "").slice(0, 60),
+      comment: String(persona?.comment ?? "").slice(0, 600),
+    };
     return true;
   }
 
-  /** Persona step only: grab the pen — either the participant or the facilitator. */
+  /** Persona intake only: grab the pen — either the participant or the facilitator. */
   takeControl(roomCode: string, id: string): boolean {
     const room = this.rooms.get(roomCode);
-    if (!room || stepInfo(room.step).kind !== "persona") return false;
+    if (!room || !isPersonaStep(room.step)) return false;
     if (!this.isFacilitator(room, id) && !this.isParticipant(room, id)) return false;
     room.controllerId = id;
     return true;
@@ -170,7 +190,7 @@ export class MemStorage {
     room.phase = "playing";
     room.step = 0;
     room.person = "";
-    room.persona = { name: "", description: "" };
+    room.persona = emptyPersona();
     room.controllerId = room.participant?.id ?? "";
     room.answers = [];
     return true;

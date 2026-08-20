@@ -89,9 +89,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (room && storage.setPerson(room.roomCode, socket.id, label)) emit(room.roomCode);
     });
 
-    socket.on("set_persona", (name: string, description: string) => {
+    socket.on("set_persona", (persona) => {
       const room = storage.getRoomByAnyId(socket.id);
-      if (room && storage.setPersona(room.roomCode, socket.id, name, description)) emit(room.roomCode);
+      if (room && storage.setPersona(room.roomCode, socket.id, persona)) emit(room.roomCode);
     });
 
     socket.on("take_control", () => {

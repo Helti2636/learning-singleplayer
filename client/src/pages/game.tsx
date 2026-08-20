@@ -1,7 +1,7 @@
 import { useState, type ReactNode } from "react";
 import { useRoute } from "wouter";
 import { useRoom } from "@/lib/useRoom";
-import { RoomBar, Board } from "@/components/game-parts";
+import { RoomBar, Board, PersonaIntake, PersonaOverview } from "@/components/game-parts";
 import { ROUNDS, PERSON_PRESETS, stepInfo } from "@shared/content";
 
 // Presets that reveal a name field when picked (so the board shows a real name).
@@ -20,13 +20,10 @@ export default function Game() {
   const room = useRoom(roomCode, "participant");
   const { gameState, myId } = room;
 
-  // Local input state for the two setup screens (participant owns these).
+  // Local input state for the "someone else" screen (participant owns this).
   const [inputMode, setInputMode] = useState<"" | "colleague" | "custom">("");
   const [nameText, setNameText] = useState("");
-  const [personaName, setPersonaName] = useState("");
-  const [personaDesc, setPersonaDesc] = useState("");
   const [seeded, setSeeded] = useState(false);
-  const [personaSeededFor, setPersonaSeededFor] = useState("");
 
   if (!gameState) {
     return (
@@ -39,15 +36,13 @@ export default function Game() {
     );
   }
 
-  // Seed local fields from server state once (e.g. after a reload).
+  // Seed the "someone else" field from server state once (e.g. after a reload).
   if (!seeded && gameState.phase !== "waiting") {
     setSeeded(true);
     if (gameState.person && !DIRECT_PRESETS.includes(gameState.person)) {
       setInputMode("custom");
       setNameText(gameState.person);
     }
-    setPersonaName(gameState.persona.name);
-    setPersonaDesc(gameState.persona.description);
   }
 
   const { step } = gameState;
@@ -74,7 +69,10 @@ export default function Game() {
   if (info.kind === "board") {
     return shell(
       <>
-        <div className="tg-round-line"><span className="tg-eyebrow">Your three perspectives, side by side</span></div>
+        <div className="tg-round-line"><span className="tg-eyebrow">Your learning persona</span></div>
+        <h1 className="tg-topic" style={{ marginBottom: "1.4rem" }}>{gameState.persona.name || "Your persona"}</h1>
+        <PersonaOverview persona={gameState.persona} />
+        <div className="tg-round-line" style={{ marginTop: "2.4rem" }}><span className="tg-eyebrow">Your three perspectives, side by side</span></div>
         <h1 className="tg-topic" style={{ marginBottom: "2rem" }}>How your answers compare</h1>
         <Board answers={gameState.answers} person={gameState.person} persona={gameState.persona} />
         <div className="tg-controls">
@@ -154,57 +152,24 @@ export default function Game() {
     );
   }
 
-  // ---- Create the learning persona (you type, or the facilitator takes control; both see it live) ----
-  if (info.kind === "persona") {
+  // ---- Create the learning persona (name → 11 questions → comment) ----
+  if (info.kind === "personaName" || info.kind === "personaQuestion" || info.kind === "personaComment") {
     const isController = myId === gameState.controllerId;
-    if (isController && personaSeededFor !== myId) {
-      setPersonaSeededFor(myId);
-      setPersonaName(gameState.persona.name);
-      setPersonaDesc(gameState.persona.description);
-    } else if (!isController && personaSeededFor === myId) {
-      setPersonaSeededFor("");
-    }
-    const canNext = gameState.persona.name.trim() !== "";
-    if (isController) {
-      return shell(
-        <>
-          <div className="tg-round-line"><span className="tg-eyebrow">Perspective 3 of 3</span></div>
-          <h1 className="tg-topic">Create a learning persona</h1>
-          <p className="tg-standing" style={{ marginBottom: "1.6rem" }}>
-            The person your future trainings are really for — your facilitator can see it live.
-          </p>
-          <div className="tg-field" style={{ maxWidth: "34rem", marginBottom: "1rem" }}>
-            <label className="tg-label" htmlFor="pname">Persona name</label>
-            <input id="pname" className="tg-input" placeholder="e.g. Priya, the busy team lead"
-              value={personaName} maxLength={40}
-              onChange={(e) => { setPersonaName(e.target.value); room.setPersona(e.target.value, personaDesc); }} />
-          </div>
-          <div className="tg-field" style={{ maxWidth: "34rem" }}>
-            <label className="tg-label" htmlFor="pdesc">A few characteristics (optional)</label>
-            <textarea id="pdesc" className="tg-input" rows={4} placeholder="Their role, goals, how they like to learn…"
-              value={personaDesc} maxLength={600}
-              onChange={(e) => { setPersonaDesc(e.target.value); room.setPersona(personaName, e.target.value); }} />
-          </div>
-          <NavBar onBack={() => goto(step - 1)} onNext={() => goto(step + 1)} nextDisabled={!canNext} />
-        </>
-      );
-    }
+    const p = gameState.persona;
+    const nextDisabled =
+      info.kind === "personaName" ? p.name.trim() === ""
+      : info.kind === "personaQuestion" ? (p.answers?.[info.personaIndex] ?? -1) < 0
+      : false;
+    const driverLabel = gameState.controllerId === gameState.facilitator?.id ? "Your facilitator" : "You";
     return shell(
       <>
-        <div className="tg-round-line"><span className="tg-eyebrow">Perspective 3 of 3</span></div>
-        <h1 className="tg-topic">Create a learning persona</h1>
-        <p className="tg-standing" style={{ marginBottom: "1.6rem" }}>
-          Your facilitator is filling this in — take control to type it yourself.
-        </p>
-        <div className="ls-persona-live">
-          <div className="live-name tg-serif">{gameState.persona.name || "…"}</div>
-          {gameState.persona.description && <div className="live-desc">{gameState.persona.description}</div>}
-        </div>
+        <PersonaIntake persona={p} kind={info.kind} personaIndex={info.personaIndex}
+          isController={isController} driverLabel={driverLabel} onChange={room.setPersona} />
         <div className="tg-controls">
           <div className="buttons">
-            <button className="tg-btn ghost" onClick={room.takeControl}>Take control</button>
+            {!isController && <button className="tg-btn ghost" onClick={room.takeControl}>Take control</button>}
             <button className="tg-btn ghost" onClick={() => goto(step - 1)}>← Back</button>
-            <button className="tg-btn" onClick={() => goto(step + 1)} disabled={!canNext}>Next →</button>
+            <button className="tg-btn" onClick={() => goto(step + 1)} disabled={nextDisabled}>Next →</button>
           </div>
         </div>
       </>

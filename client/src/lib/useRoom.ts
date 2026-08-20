@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useLocation } from "wouter";
 import { getSocket, connectSocket, disconnectSocket } from "@/lib/socket";
-import type { GameState, Role } from "@shared/schema";
+import type { GameState, Role, Persona } from "@shared/schema";
 
 /**
  * Shared room connection for the participant and the (observing) facilitator.
@@ -82,8 +82,7 @@ export function useRoom(roomCode: string, role: Role) {
     setAnswer: (perspective: number, question: number, optionIndex: number) =>
       socket.emit("set_answer", perspective, question, optionIndex),
     setPerson: (label: string) => socket.emit("set_person", label),
-    setPersona: (personaName: string, description: string) =>
-      socket.emit("set_persona", personaName, description),
+    setPersona: (persona: Persona) => socket.emit("set_persona", persona),
     takeControl: () => socket.emit("take_control"),
     restart: () => socket.emit("restart"),
     leave: () => setLocation("/"),
