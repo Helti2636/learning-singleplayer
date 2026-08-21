@@ -66,5 +66,6 @@ export interface ClientToServerEvents {
   take_control: () => void;   // during the persona intake: grab the pen (participant or facilitator)
   add_item: (itemId: string) => void;        // pack an item into the current backpack (or the demo)
   remove_item: (itemId: string) => void;     // take an item back out
+  skip: () => void;           // facilitator jumps past the current block (persona is never skippable)
   restart: () => void;
 }

@@ -1,6 +1,6 @@
 import type { GameState, Persona } from "@shared/schema";
 import {
-  TOTAL_STEPS, END_STEP, ROUNDS, isPersonaStep, isFacilitatorStep, stepInfo,
+  TOTAL_STEPS, END_STEP, ROUNDS, isPersonaStep, isFacilitatorStep, stepInfo, skipTarget,
   emptyPersona, PERSONA_QUESTIONS, ITEM_BY_ID, MAX_ITEMS,
 } from "@shared/content";
 
@@ -201,6 +201,18 @@ export class MemStorage {
       otherTexts,
       comment: String(persona?.comment ?? "").slice(0, 600),
     };
+    return true;
+  }
+
+  /** Facilitator jumps past the current block to the next activity (persona is never skippable). */
+  skip(roomCode: string, byId: string): boolean {
+    const room = this.rooms.get(roomCode);
+    if (!room || !this.isFacilitator(room, byId)) return false;
+    const target = skipTarget(room.step);
+    if (target == null) return false;
+    room.step = target;
+    room.phase = target >= END_STEP ? "board" : "playing";
+    room.controllerId = room.participant?.id ?? ""; // targets are never mid-intake
     return true;
   }
 

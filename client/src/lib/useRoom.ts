@@ -85,6 +85,7 @@ export function useRoom(roomCode: string, role: Role) {
     takeControl: () => socket.emit("take_control"),
     addItem: (id: string) => socket.emit("add_item", id),
     removeItem: (id: string) => socket.emit("remove_item", id),
+    skip: () => socket.emit("skip"),
     restart: () => socket.emit("restart"),
     leave: () => setLocation("/"),
     copyCode: () => {

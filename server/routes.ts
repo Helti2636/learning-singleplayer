@@ -99,6 +99,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (room && storage.addItem(room.roomCode, socket.id, itemId)) emit(room.roomCode);
     });
 
+    socket.on("skip", () => {
+      const room = storage.getRoomByAnyId(socket.id);
+      if (room && storage.skip(room.roomCode, socket.id)) emit(room.roomCode);
+    });
+
     socket.on("remove_item", (itemId: string) => {
       const room = storage.getRoomByAnyId(socket.id);
       if (room && storage.removeItem(room.roomCode, socket.id, itemId)) emit(room.roomCode);

@@ -336,3 +336,25 @@ export function isPersonaStep(step: number): boolean {
 export function isFacilitatorStep(step: number): boolean {
   return stepInfo(step).kind === "backpackDemo";
 }
+
+/**
+ * If the facilitator may skip the current block, the step to jump to (the next
+ * activity, past the block's own review). Persona creation is never skippable.
+ * null → no skip available on this step.
+ */
+export function skipTarget(step: number): number | null {
+  if (step >= 1 && step <= TOTAL_ROUNDS) return BACKPACK_DEMO_STEP;                         // reflection · yourself
+  if (step === BACKPACK_DEMO_STEP || step === BACKPACK_SELF_STEP) return PERSONA_NAME_STEP; // backpack · yourself
+  if (step >= REFLECT_PERSONA_START && step < REFLECT_COMPARE_STEP) return BACKPACK_PERSONA_STEP; // reflection · persona
+  if (step === BACKPACK_PERSONA_STEP) return END_STEP;                                      // backpack · persona
+  return null;
+}
+
+/** A short label for what the skip lands on, for the button. */
+export function skipLabel(step: number): string {
+  if (step >= 1 && step <= TOTAL_ROUNDS) return "Skip the reflection →";
+  if (step === BACKPACK_DEMO_STEP || step === BACKPACK_SELF_STEP) return "Skip the backpack →";
+  if (step >= REFLECT_PERSONA_START && step < REFLECT_COMPARE_STEP) return "Skip the reflection →";
+  if (step === BACKPACK_PERSONA_STEP) return "Skip the backpack →";
+  return "Skip →";
+}

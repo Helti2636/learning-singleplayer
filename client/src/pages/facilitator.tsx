@@ -2,7 +2,7 @@ import { type ReactNode } from "react";
 import { useRoute } from "wouter";
 import { useRoom } from "@/lib/useRoom";
 import { RoomBar, Board, PersonaIntake, PersonaOverview, BackpackScene, BackpackView } from "@/components/game-parts";
-import { FRAMING, BACKPACK_FRAMING, ROUNDS, stepInfo, isPersonaStep, personaRows } from "@shared/content";
+import { FRAMING, BACKPACK_FRAMING, ROUNDS, stepInfo, isPersonaStep, personaRows, skipTarget, skipLabel } from "@shared/content";
 import { printHtml, esc } from "@/lib/print";
 import { backpackImageHtml } from "@/lib/backpack-svg";
 
@@ -82,6 +82,18 @@ export default function Facilitator() {
       <p class="foot">Saved ${esc(new Date().toLocaleString())}</p>`;
   };
 
+  // A combined "everything so far" snapshot — a checkpoint the facilitator can save
+  // after any block (empty where a block hasn't been done / was skipped).
+  const snapshotDoc = () =>
+    personaCardDoc() +
+    `<div style="page-break-before:always;"></div>` + boardDoc() +
+    `<div style="page-break-before:always;"></div>` + backpackDoc();
+
+  const skipBtn = skipTarget(step) != null
+    ? <button className="tg-btn ghost" onClick={room.skip}>{skipLabel(step)}</button>
+    : null;
+  const saveProgressBtn = <button className="tg-btn ghost" onClick={() => printHtml("Progress", snapshotDoc())}>Save progress (PDF)</button>;
+
   // ---- Lobby ----
   if (gameState.phase === "waiting") {
     return shell(
@@ -137,6 +149,7 @@ export default function Facilitator() {
         <h1 className="tg-topic" style={{ marginBottom: ".6rem" }}>{BACKPACK_FRAMING.question}</h1>
         <BackpackScene packed={gameState.demo} maxItems={gameState.maxItems} onAdd={room.addItem} onRemove={room.removeItem} />
         <div className="tg-controls"><div className="buttons">
+          {skipBtn}
           <button className="tg-btn" onClick={() => room.setStep(step + 1)}>Next — participant packs →</button>
         </div></div>
       </>
@@ -209,6 +222,10 @@ export default function Facilitator() {
       <div className="tg-round-line"><span className="tg-eyebrow">Live · {label}</span></div>
       <h1 className="tg-topic" style={{ marginBottom: "1.4rem" }}>Following along</h1>
       {body}
+      <div className="tg-controls"><div className="buttons">
+        {skipBtn}
+        {saveProgressBtn}
+      </div></div>
     </>
   );
 }
