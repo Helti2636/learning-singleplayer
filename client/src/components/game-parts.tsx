@@ -15,6 +15,12 @@ function setAt(arr: number[], i: number, v: number): number[] {
   return next;
 }
 
+function setOtherAt(arr: string[], i: number, v: string): string[] {
+  const next = PERSONA_QUESTIONS.map((_, k) => arr?.[k] ?? "");
+  next[i] = v;
+  return next;
+}
+
 /** The anonymous default-avatar head used on the persona overview. */
 function AvatarHead() {
   return (
@@ -205,15 +211,15 @@ export function PersonaIntake({
               );
             })}
           </div>
-          {q.allowOther && q.options[(view.answers?.[personaIndex] ?? -1)] === "Other" && (
+          {q.options[(view.answers?.[personaIndex] ?? -1)] === "Other" && (
             isController ? (
               <div className="tg-field" style={{ marginTop: "1rem", maxWidth: "28rem" }}>
-                <label className="tg-label" htmlFor="lo">Which language?</label>
-                <input id="lo" className="tg-input" autoFocus placeholder="Type the language" value={buf.languageOther} maxLength={40}
-                  onChange={(e) => push({ ...buf, languageOther: e.target.value })} />
+                <label className="tg-label" htmlFor="lo">Your own answer</label>
+                <input id="lo" className="tg-input" autoFocus placeholder="Type your own answer…" value={buf.otherTexts?.[personaIndex] ?? ""} maxLength={100}
+                  onChange={(e) => push({ ...buf, otherTexts: setOtherAt(buf.otherTexts, personaIndex, e.target.value) })} />
               </div>
-            ) : view.languageOther ? (
-              <p className="tg-standing" style={{ marginTop: ".8rem" }}>Language: <strong>{view.languageOther}</strong></p>
+            ) : (view.otherTexts?.[personaIndex] ?? "") ? (
+              <p className="tg-standing" style={{ marginTop: ".8rem" }}>Their answer: <strong>{view.otherTexts[personaIndex]}</strong></p>
             ) : null
           )}
         </>

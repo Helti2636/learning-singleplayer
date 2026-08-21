@@ -194,10 +194,11 @@ export class MemStorage {
       const v = Math.floor(Number(persona?.answers?.[i]));
       return Number.isFinite(v) && v >= 0 && v < q.options.length ? v : -1;
     });
+    const otherTexts = PERSONA_QUESTIONS.map((_, i) => String(persona?.otherTexts?.[i] ?? "").slice(0, 120));
     room.persona = {
       name: String(persona?.name ?? "").slice(0, 60),
       answers,
-      languageOther: String(persona?.languageOther ?? "").slice(0, 60),
+      otherTexts,
       comment: String(persona?.comment ?? "").slice(0, 600),
     };
     return true;

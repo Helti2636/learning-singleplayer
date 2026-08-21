@@ -208,16 +208,22 @@ export const PERSONA_QUESTIONS: PersonaQuestion[] = [
   },
 ];
 
+// Every persona question offers an open "Other" choice that reveals a free-text field.
+for (const q of PERSONA_QUESTIONS) {
+  if (!q.options.includes("Other")) q.options = [...q.options, "Other"];
+  q.allowOther = true;
+}
+
 // Structural persona shape (matches personaSchema in schema.ts).
 export interface PersonaData {
   name: string;
   answers: number[];      // one option index per PERSONA_QUESTIONS entry; -1 = unanswered
-  languageOther: string;  // free text when "Primary Language" = Other
+  otherTexts: string[];   // per-question free text, used when that question's answer is "Other"
   comment: string;        // 12th open field
 }
 
 export function emptyPersona(): PersonaData {
-  return { name: "", answers: PERSONA_QUESTIONS.map(() => -1), languageOther: "", comment: "" };
+  return { name: "", answers: PERSONA_QUESTIONS.map(() => -1), otherTexts: PERSONA_QUESTIONS.map(() => ""), comment: "" };
 }
 
 /** Resolve one question's chosen value to display text ("" if unanswered). */
@@ -226,7 +232,7 @@ export function personaValue(p: PersonaData, i: number): string {
   const idx = p.answers?.[i];
   if (idx == null || idx < 0 || idx >= q.options.length) return "";
   const opt = q.options[idx];
-  if (q.allowOther && opt === "Other" && p.languageOther.trim()) return p.languageOther.trim();
+  if (opt === "Other") return (p.otherTexts?.[i] ?? "").trim() || "Other";
   return opt;
 }
 
