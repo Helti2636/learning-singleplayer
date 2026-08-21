@@ -50,15 +50,38 @@ export const ROUNDS: RoundContent[] = [
 export const TOTAL_ROUNDS = ROUNDS.length;
 
 // ---------------------------------------------------------------------------
-// Single-player: one participant answers the 3 questions from 3 perspectives.
+// Backpack task: a fixed pool of objects to pack (3 things for the journey).
 // ---------------------------------------------------------------------------
 
-// Preset choices offered in perspective 2 ("as someone else"), plus a custom option.
-export const PERSON_PRESETS = [
-  "Your supervisor",
-  "Your most memorable colleague",
-  "António Guterres",
+export const BACKPACK_FRAMING = {
+  intro: "Imagine you are going on a learning journey.",
+  question: "What three things would you put in your backpack to ensure success?",
+};
+
+export interface BackpackItem {
+  id: string;
+  name: string;
+}
+
+export const ITEMS: BackpackItem[] = [
+  { id: "map", name: "Map" },
+  { id: "compass", name: "Compass" },
+  { id: "flashlight", name: "Flashlight" },
+  { id: "tent", name: "Tent" },
+  { id: "notebook", name: "Notebook" },
+  { id: "star", name: "North star" },
+  { id: "firstaid", name: "First-aid kit" },
+  { id: "binoculars", name: "Binoculars" },
+  { id: "water", name: "Water bottle" },
+  { id: "snacks", name: "Snacks" },
+  { id: "matches", name: "Matches" },
+  { id: "boots", name: "Boots" },
+  { id: "powerbank", name: "Powerbank" },
 ];
+
+export const ITEM_BY_ID: Record<string, BackpackItem> = Object.fromEntries(ITEMS.map((i) => [i.id, i]));
+
+export const MAX_ITEMS = 3;
 
 // ---------------------------------------------------------------------------
 // Learning-persona intake: a short name, then 11 single-choice questions,
@@ -228,40 +251,80 @@ export function personaPlainText(p: PersonaData): string {
 // 0 intro · 1-3 perspective 1 (you) · 4 pick person · 5-7 perspective 2 (someone) ·
 // 8 persona name · 9..19 persona questions (11) · 20 persona comment ·
 // 21-23 perspective 3 (persona) · 24 board
+// ---------------------------------------------------------------------------
+// Merged single-player step machine (one game: reflection + backpack, self then
+// persona). Perspective 0 = "yourself", 1 = "the persona".
+//
+//  0                         intro
+//  1..TOTAL_ROUNDS           reflection · yourself
+//  SELF_RECAP                your answers so far (recap)
+//  BACKPACK_DEMO             facilitator packs an example
+//  BACKPACK_SELF             pack your own backpack
+//  PERSONA_NAME              persona name
+//  PERSONA_Q_START..         persona questions (11)
+//  PERSONA_COMMENT           persona comment
+//  PERSONA_REVEAL            the persona card
+//  REFLECT_PERSONA_START..   reflection · as the persona
+//  REFLECT_COMPARE           reflection: you vs the persona
+//  BACKPACK_PERSONA          pack the persona's backpack
+//  BACKPACK_COMPARE          backpacks: you vs the persona
+//  END                       exports
+// ---------------------------------------------------------------------------
 const PQ = PERSONA_QUESTIONS.length;
-export const PERSONA_NAME_STEP = 8;
-export const PERSONA_Q_START = 9;
-export const PERSONA_COMMENT_STEP = PERSONA_Q_START + PQ;    // 20
-export const PERSONA_REVEAL_STEP = PERSONA_COMMENT_STEP + 1; // 21 — "meet your persona" break card
-const PERSPECTIVE2_START = PERSONA_REVEAL_STEP + 1;          // 22
-export const TOTAL_STEPS = PERSPECTIVE2_START + TOTAL_ROUNDS + 1; // 26
-export const BOARD_STEP = TOTAL_STEPS - 1;                        // 25
+export const SELF_RECAP_STEP = TOTAL_ROUNDS + 1;                 // 4
+export const BACKPACK_DEMO_STEP = SELF_RECAP_STEP + 1;           // 5
+export const BACKPACK_SELF_STEP = BACKPACK_DEMO_STEP + 1;        // 6
+export const PERSONA_NAME_STEP = BACKPACK_SELF_STEP + 1;         // 7
+export const PERSONA_Q_START = PERSONA_NAME_STEP + 1;            // 8
+export const PERSONA_COMMENT_STEP = PERSONA_Q_START + PQ;        // 19
+export const PERSONA_REVEAL_STEP = PERSONA_COMMENT_STEP + 1;     // 20
+export const REFLECT_PERSONA_START = PERSONA_REVEAL_STEP + 1;    // 21
+export const REFLECT_COMPARE_STEP = REFLECT_PERSONA_START + TOTAL_ROUNDS; // 24
+export const BACKPACK_PERSONA_STEP = REFLECT_COMPARE_STEP + 1;   // 25
+export const BACKPACK_COMPARE_STEP = BACKPACK_PERSONA_STEP + 1;  // 26
+export const END_STEP = BACKPACK_COMPARE_STEP + 1;               // 27
+export const TOTAL_STEPS = END_STEP + 1;                         // 28
 
 export type StepKind =
   | "intro"
-  | "question"
-  | "person"
+  | "reflectionQ"
+  | "selfRecap"
+  | "backpackDemo"
+  | "backpackSelf"
   | "personaName"
   | "personaQuestion"
   | "personaComment"
   | "personaReveal"
-  | "board";
+  | "reflectionCompare"
+  | "backpackPersona"
+  | "backpackCompare"
+  | "end";
 
 export function stepInfo(step: number): { kind: StepKind; perspective: number; question: number; personaIndex: number } {
-  if (step <= 0) return { kind: "intro", perspective: -1, question: -1, personaIndex: -1 };
-  if (step >= BOARD_STEP) return { kind: "board", perspective: -1, question: -1, personaIndex: -1 };
-  if (step <= 3) return { kind: "question", perspective: 0, question: step - 1, personaIndex: -1 };
-  if (step === 4) return { kind: "person", perspective: 1, question: -1, personaIndex: -1 };
-  if (step <= 7) return { kind: "question", perspective: 1, question: step - 5, personaIndex: -1 };
-  if (step === PERSONA_NAME_STEP) return { kind: "personaName", perspective: 2, question: -1, personaIndex: -1 };
-  if (step < PERSONA_COMMENT_STEP) return { kind: "personaQuestion", perspective: 2, question: -1, personaIndex: step - PERSONA_Q_START };
-  if (step === PERSONA_COMMENT_STEP) return { kind: "personaComment", perspective: 2, question: -1, personaIndex: -1 };
-  if (step === PERSONA_REVEAL_STEP) return { kind: "personaReveal", perspective: 2, question: -1, personaIndex: -1 };
-  return { kind: "question", perspective: 2, question: step - PERSPECTIVE2_START, personaIndex: -1 }; // 22-24
+  const base = { perspective: -1, question: -1, personaIndex: -1 };
+  if (step <= 0) return { kind: "intro", ...base };
+  if (step >= END_STEP) return { kind: "end", ...base };
+  if (step <= TOTAL_ROUNDS) return { kind: "reflectionQ", perspective: 0, question: step - 1, personaIndex: -1 };
+  if (step === SELF_RECAP_STEP) return { kind: "selfRecap", ...base };
+  if (step === BACKPACK_DEMO_STEP) return { kind: "backpackDemo", ...base };
+  if (step === BACKPACK_SELF_STEP) return { kind: "backpackSelf", ...base };
+  if (step === PERSONA_NAME_STEP) return { kind: "personaName", ...base };
+  if (step < PERSONA_COMMENT_STEP) return { kind: "personaQuestion", perspective: -1, question: -1, personaIndex: step - PERSONA_Q_START };
+  if (step === PERSONA_COMMENT_STEP) return { kind: "personaComment", ...base };
+  if (step === PERSONA_REVEAL_STEP) return { kind: "personaReveal", ...base };
+  if (step < REFLECT_COMPARE_STEP) return { kind: "reflectionQ", perspective: 1, question: step - REFLECT_PERSONA_START, personaIndex: -1 };
+  if (step === REFLECT_COMPARE_STEP) return { kind: "reflectionCompare", ...base };
+  if (step === BACKPACK_PERSONA_STEP) return { kind: "backpackPersona", ...base };
+  return { kind: "backpackCompare", ...base }; // BACKPACK_COMPARE_STEP
 }
 
 /** True for any of the persona-intake screens (name / questions / comment). */
 export function isPersonaStep(step: number): boolean {
   const k = stepInfo(step).kind;
   return k === "personaName" || k === "personaQuestion" || k === "personaComment";
+}
+
+/** Steps the facilitator is actively driving (so they may also navigate). */
+export function isFacilitatorStep(step: number): boolean {
+  return stepInfo(step).kind === "backpackDemo";
 }

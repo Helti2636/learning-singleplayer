@@ -1,5 +1,8 @@
 import type { GameState, Persona } from "@shared/schema";
-import { TOTAL_STEPS, BOARD_STEP, ROUNDS, isPersonaStep, emptyPersona, PERSONA_QUESTIONS } from "@shared/content";
+import {
+  TOTAL_STEPS, END_STEP, ROUNDS, isPersonaStep, isFacilitatorStep, stepInfo,
+  emptyPersona, PERSONA_QUESTIONS, ITEM_BY_ID, MAX_ITEMS,
+} from "@shared/content";
 
 export function generateRoomCode(): string {
   const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
@@ -24,10 +27,13 @@ export class MemStorage {
       participant: null,
       step: 0,
       totalSteps: TOTAL_STEPS,
-      person: "",
       persona: emptyPersona(),
       controllerId: "",
       answers: [],
+      demo: [],
+      backpackSelf: [],
+      backpackPersona: [],
+      maxItems: MAX_ITEMS,
     };
     this.rooms.set(roomCode, state);
     return roomCode;
@@ -108,15 +114,16 @@ export class MemStorage {
   setStep(roomCode: string, byId: string, step: number): boolean {
     const room = this.rooms.get(roomCode);
     if (!room || room.phase === "waiting") return false;
-    const clamped = Math.max(0, Math.min(BOARD_STEP, Math.floor(step)));
+    const clamped = Math.max(0, Math.min(END_STEP, Math.floor(step)));
     const fromIntake = isPersonaStep(room.step);
     const toIntake = isPersonaStep(clamped);
-    // The participant always drives navigation; during the persona intake the
-    // facilitator may also step through (so they can fill it in after taking control).
-    const canNavigate = this.isParticipant(room, byId) || (this.isFacilitator(room, byId) && (fromIntake || toIntake));
+    // The participant always drives navigation; on facilitator-active steps (the
+    // demo) and the persona intake, the facilitator may also step through.
+    const facActive = fromIntake || toIntake || isFacilitatorStep(room.step) || isFacilitatorStep(clamped);
+    const canNavigate = this.isParticipant(room, byId) || (this.isFacilitator(room, byId) && facActive);
     if (!canNavigate) return false;
     room.step = clamped;
-    room.phase = clamped >= BOARD_STEP ? "board" : "playing";
+    room.phase = clamped >= END_STEP ? "board" : "playing";
     // Controller lifecycle: the participant holds the pen by default. Keep whoever
     // holds it while moving between intake screens; reset to the participant otherwise.
     if (toIntake) {
@@ -136,7 +143,7 @@ export class MemStorage {
   ): boolean {
     const room = this.rooms.get(roomCode);
     if (!room || !this.isParticipant(room, byId)) return false;
-    if (perspective < 0 || perspective > 2 || question < 0 || question > 2) return false;
+    if (perspective < 0 || perspective > 1 || question < 0 || question > 2) return false;
     const options = ROUNDS[question]?.options;
     if (!options || optionIndex < 0 || optionIndex >= options.length) return false;
 
@@ -146,10 +153,33 @@ export class MemStorage {
     return true;
   }
 
-  setPerson(roomCode: string, byId: string, label: string): boolean {
+  /** Which backpack the current step edits, and who may edit it. */
+  private backpackTarget(room: GameState, byId: string): string[] | null {
+    const kind = stepInfo(room.step).kind;
+    if (kind === "backpackDemo") return this.isFacilitator(room, byId) ? room.demo : null;
+    if (kind === "backpackSelf") return this.isParticipant(room, byId) ? room.backpackSelf : null;
+    if (kind === "backpackPersona") return this.isParticipant(room, byId) ? room.backpackPersona : null;
+    return null;
+  }
+
+  addItem(roomCode: string, byId: string, itemId: string): boolean {
     const room = this.rooms.get(roomCode);
-    if (!room || !this.isParticipant(room, byId)) return false;
-    room.person = label.slice(0, 60);
+    if (!room || !ITEM_BY_ID[itemId]) return false;
+    const target = this.backpackTarget(room, byId);
+    if (!target) return false;
+    if (target.includes(itemId) || target.length >= room.maxItems) return false;
+    target.push(itemId);
+    return true;
+  }
+
+  removeItem(roomCode: string, byId: string, itemId: string): boolean {
+    const room = this.rooms.get(roomCode);
+    if (!room) return false;
+    const target = this.backpackTarget(room, byId);
+    if (!target) return false;
+    const i = target.indexOf(itemId);
+    if (i === -1) return false;
+    target.splice(i, 1);
     return true;
   }
 
@@ -189,10 +219,12 @@ export class MemStorage {
     if (!this.isFacilitator(room, byId) && !this.isParticipant(room, byId)) return false;
     room.phase = "playing";
     room.step = 0;
-    room.person = "";
     room.persona = emptyPersona();
     room.controllerId = room.participant?.id ?? "";
     room.answers = [];
+    room.demo = [];
+    room.backpackSelf = [];
+    room.backpackPersona = [];
     return true;
   }
 }

@@ -84,11 +84,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
     });
 
-    socket.on("set_person", (label: string) => {
-      const room = storage.getRoomByAnyId(socket.id);
-      if (room && storage.setPerson(room.roomCode, socket.id, label)) emit(room.roomCode);
-    });
-
     socket.on("set_persona", (persona) => {
       const room = storage.getRoomByAnyId(socket.id);
       if (room && storage.setPersona(room.roomCode, socket.id, persona)) emit(room.roomCode);
@@ -97,6 +92,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
     socket.on("take_control", () => {
       const room = storage.getRoomByAnyId(socket.id);
       if (room && storage.takeControl(room.roomCode, socket.id)) emit(room.roomCode);
+    });
+
+    socket.on("add_item", (itemId: string) => {
+      const room = storage.getRoomByAnyId(socket.id);
+      if (room && storage.addItem(room.roomCode, socket.id, itemId)) emit(room.roomCode);
+    });
+
+    socket.on("remove_item", (itemId: string) => {
+      const room = storage.getRoomByAnyId(socket.id);
+      if (room && storage.removeItem(room.roomCode, socket.id, itemId)) emit(room.roomCode);
     });
 
     socket.on("restart", () => {

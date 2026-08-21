@@ -124,6 +124,48 @@
   .lp-col .lp-card{flex:1 1 44%;}
 }
 
+/* ---- Answer recap (read-only list) ---- */
+.tg-recap{display:flex; flex-direction:column; gap:.7rem;}
+.tg-recap-row{display:grid; grid-template-columns:1fr auto; gap:1rem; align-items:baseline;
+  background:var(--tg-surface); border:1px solid var(--tg-line); border-radius:12px; padding:.85rem 1.1rem;}
+.tg-recap-q{color:var(--tg-ink-soft); font-size:.95rem;}
+.tg-recap-a{color:var(--tg-ink); font-size:1.05rem; text-align:right;}
+@media (max-width:560px){ .tg-recap-row{grid-template-columns:1fr;} .tg-recap-a{text-align:left;} }
+
+/* ---- Backpack game: drag-and-drop scene ---- */
+.bp-scene{position:relative; overflow:hidden; border:1px solid var(--tg-line); border-radius:20px;
+  background:linear-gradient(180deg,#d3dcb4 0%, #c4cfa4 100%); min-height:440px;
+  display:flex; flex-direction:column; align-items:center; justify-content:space-between; padding:1.4rem 1rem 1.2rem; margin-top:.4rem;}
+.bp-ground{position:absolute; left:0; right:0; bottom:0; height:32%; background:#93a067; border-radius:50% 50% 0 0 / 26% 26% 0 0;}
+.bp-center{position:relative; z-index:2; display:flex; flex-direction:column; align-items:center; gap:.5rem; margin-top:.3rem;}
+.bp-drop{position:relative; display:flex; flex-direction:column; align-items:center; border-radius:20px; transition:transform .12s ease;}
+.bp-drop.armed{transform:scale(1.04);}
+.bp-illus{width:min(46vw,214px); height:auto; filter:drop-shadow(0 10px 10px rgba(0,0,0,.16));}
+.bp-slots{display:flex; gap:.5rem; margin-top:-.2rem;}
+.bp-slot{width:46px; height:46px; border-radius:12px; display:grid; place-items:center; background:rgba(255,255,255,.72); border:1px solid rgba(74,55,32,.3); padding:0;}
+.bp-slot.filled{cursor:grab; background:#f6efda; touch-action:none;}
+.bp-slot.empty{border-style:dashed; color:#8a6a3e; font-family:var(--tg-mono); font-size:1.1rem;}
+.bp-count{z-index:2; font-family:var(--tg-mono); font-size:.64rem; letter-spacing:.08em; text-transform:uppercase; color:#4a3720; background:rgba(255,255,255,.6); border-radius:100px; padding:.32rem .7rem;}
+.bp-tray{position:relative; z-index:2; display:flex; flex-wrap:wrap; gap:.55rem; justify-content:center;}
+.bp-card{background:#f6efda; border:1px solid #d8c7a0; border-radius:14px; padding:.55rem .45rem .5rem; display:flex; flex-direction:column; align-items:center; gap:.25rem; width:86px; cursor:grab; box-shadow:0 6px 12px -8px rgba(0,0,0,.4); touch-action:none; user-select:none;}
+.bp-name{font-family:var(--tg-serif); font-size:.86rem; color:#3a2a1a; text-align:center; line-height:1.08;}
+.bp-card.is-dragging{opacity:.3;}
+.bp-ghost{position:fixed; z-index:60; transform:translate(-50%,-50%); pointer-events:none; opacity:.95;}
+.bp-scene.readonly .bp-card, .bp-scene.readonly .bp-slot.filled{cursor:default;}
+.bp-scene.readonly .bp-card:hover{transform:none; box-shadow:0 6px 14px -8px rgba(0,0,0,.4);}
+.bp-scene.readonly .bp-tray{opacity:.85;}
+
+/* ---- Read-only backpack views (recap + comparison) ---- */
+.bp-compare{display:grid; grid-template-columns:repeat(auto-fit,minmax(230px,1fr)); gap:1rem;}
+.bp-compare-col{display:flex; flex-direction:column; gap:.8rem;}
+.bp-view{background:var(--tg-surface); border:1px solid var(--tg-line); border-radius:14px; padding:1rem 1.1rem;}
+.bp-view-title{font-family:var(--tg-mono); font-size:.64rem; letter-spacing:.1em; text-transform:uppercase; color:var(--tg-accent); margin-bottom:.7rem;}
+.bp-view-items{display:flex; gap:.5rem;}
+.bp-view-item{flex:1; background:var(--tg-surface-2); border:1px solid var(--tg-line); border-radius:10px; padding:.6rem .3rem; display:flex; flex-direction:column; align-items:center; gap:.3rem; min-height:82px; justify-content:center;}
+.bp-view-item.empty{opacity:.5;}
+.bp-view-name{font-family:var(--tg-serif); font-size:.8rem; color:var(--tg-ink); text-align:center; line-height:1.05;}
+.bp-view-dash{color:var(--tg-ink-soft); font-size:1.1rem;}
+
 /* ---- Home ---- */
 .tg-hero{border-bottom:1px solid var(--tg-line); padding-bottom:2.2rem; margin-bottom:2.4rem;}
 .tg-tags{display:flex; gap:.6rem; margin-bottom:1.2rem; flex-wrap:wrap;}

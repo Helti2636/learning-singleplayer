@@ -8,7 +8,8 @@ export const seatSchema = z.object({
 });
 export type Seat = z.infer<typeof seatSchema>;
 
-// One answer: which perspective (0-2), which question (0-2), and the chosen option.
+// One reflection answer: which perspective (0 = yourself, 1 = the persona),
+// which question (0-2), and the chosen option.
 export const answerSchema = z.object({
   perspective: z.number(),
   question: z.number(),
@@ -35,10 +36,14 @@ export const gameStateSchema = z.object({
   participant: seatSchema.nullable(),
   step: z.number(),        // 0..TOTAL_STEPS-1 — where the participant currently is
   totalSteps: z.number(),
-  person: z.string(),      // the perspective-2 label ("as someone else")
-  persona: personaSchema,  // the perspective-3 learning persona
-  controllerId: z.string(),// during the persona step: who holds the pen (participant by default, or facilitator)
-  answers: z.array(answerSchema),
+  persona: personaSchema,  // the learning persona built mid-game
+  controllerId: z.string(),// during the persona intake: who holds the pen (participant by default, or facilitator)
+  answers: z.array(answerSchema),  // reflection answers (perspective 0 = you, 1 = persona)
+  // ---- Backpack task ----
+  demo: z.array(z.string()),           // the facilitator's demo backpack (item ids)
+  backpackSelf: z.array(z.string()),   // your own backpack (round 1)
+  backpackPersona: z.array(z.string()),// the persona's backpack (round 2)
+  maxItems: z.number(),
 });
 export type GameState = z.infer<typeof gameStateSchema>;
 
@@ -55,10 +60,11 @@ export interface ClientToServerEvents {
     callback: (success: boolean, error?: string) => void
   ) => void;
   start: () => void;                                    // facilitator begins the session
-  set_step: (step: number) => void;                     // participant navigates
+  set_step: (step: number) => void;                     // navigate
   set_answer: (perspective: number, question: number, optionIndex: number) => void;
-  set_person: (label: string) => void;
   set_persona: (persona: Persona) => void;   // whole persona object (name, answers, languageOther, comment)
   take_control: () => void;   // during the persona intake: grab the pen (participant or facilitator)
+  add_item: (itemId: string) => void;        // pack an item into the current backpack (or the demo)
+  remove_item: (itemId: string) => void;     // take an item back out
   restart: () => void;
 }
