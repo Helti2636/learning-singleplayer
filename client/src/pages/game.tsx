@@ -132,7 +132,7 @@ export default function Game() {
         <div className="tg-round-line"><span className="tg-eyebrow">Warm-up · watch the example</span></div>
         <h1 className="tg-topic" style={{ marginBottom: ".8rem" }}>{BACKPACK_FRAMING.intro}</h1>
         <p className="tg-standing" style={{ marginBottom: "1.4rem" }}>Your facilitator is packing an example — you’ll pack your own next.</p>
-        <div className="bp-compare"><BackpackView title="Facilitator’s example" items={gameState.demo} maxItems={gameState.maxItems} /></div>
+        <BackpackScene packed={gameState.demo} maxItems={gameState.maxItems} onAdd={() => {}} onRemove={() => {}} readOnly />
       </>
     );
   }
