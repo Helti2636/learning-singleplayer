@@ -134,6 +134,7 @@ export default function Facilitator() {
             <button className="tg-btn ghost" onClick={() => printHtml("Learning persona", personaCardDoc())}>Save persona card (PDF)</button>
             <button className="tg-btn ghost" onClick={() => printHtml("Reflection", boardDoc())}>Save reflection (PDF)</button>
             <button className="tg-btn ghost" onClick={() => printHtml("Backpacks", backpackDoc())}>Save backpacks (PDF)</button>
+            <button className="tg-btn ghost" onClick={() => printHtml("Everything", snapshotDoc())}>Save everything (PDF)</button>
             <button className="tg-btn" onClick={room.restart}>Run it again</button>
           </div>
         </div>
