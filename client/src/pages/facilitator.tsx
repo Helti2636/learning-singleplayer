@@ -2,8 +2,9 @@ import { type ReactNode } from "react";
 import { useRoute } from "wouter";
 import { useRoom } from "@/lib/useRoom";
 import { RoomBar, Board, PersonaIntake, PersonaOverview, BackpackScene, BackpackView } from "@/components/game-parts";
-import { FRAMING, BACKPACK_FRAMING, ROUNDS, stepInfo, isPersonaStep, personaRows, ITEM_BY_ID } from "@shared/content";
+import { FRAMING, BACKPACK_FRAMING, ROUNDS, stepInfo, isPersonaStep, personaRows } from "@shared/content";
 import { printHtml, esc } from "@/lib/print";
+import { backpackImageHtml } from "@/lib/backpack-svg";
 
 export default function Facilitator() {
   const [, params] = useRoute("/facilitator/:roomCode");
@@ -37,8 +38,6 @@ export default function Facilitator() {
     const a = gameState.answers.find((x) => x.perspective === perspective && x.question === q);
     return a ? ROUNDS[q].options[a.optionIndex] : "—";
   };
-  const nameList = (ids: string[]) => (ids.length ? ids.map((id) => ITEM_BY_ID[id]?.name ?? id).join(", ") : "—");
-
   // ---- Export documents ----
   const boardDoc = () => {
     const labels = ["You", persona.name || "Persona"];
@@ -54,10 +53,10 @@ export default function Facilitator() {
 
   const backpackDoc = () =>
     `<p class="k">Backpacks</p><h1>What you packed</h1>
-      <table><thead><tr><th>Who</th><th>Three things</th></tr></thead><tbody>
-        <tr><td class="q">You</td><td>${esc(nameList(gameState.backpackSelf))}</td></tr>
-        <tr><td class="q">${esc(persona.name || "Persona")}</td><td>${esc(nameList(gameState.backpackPersona))}</td></tr>
-      </tbody></table>
+      <div style="display:flex;gap:18px;flex-wrap:wrap;margin-top:14px;">
+        <div style="flex:1;min-width:250px;">${backpackImageHtml("You", gameState.backpackSelf, gameState.maxItems)}</div>
+        <div style="flex:1;min-width:250px;">${backpackImageHtml(persona.name || "Persona", gameState.backpackPersona, gameState.maxItems)}</div>
+      </div>
       <p class="foot">Saved ${esc(new Date().toLocaleString())}</p>`;
 
   const personaCardDoc = () => {
@@ -69,11 +68,9 @@ export default function Facilitator() {
         <div style="font:600 10px/1.2 ui-monospace,monospace;letter-spacing:.1em;text-transform:uppercase;color:${ink};margin-bottom:5px;">${esc(r.label)}</div>
         <div style="font:500 15px/1.25 Georgia,serif;color:#241d12;">${esc(r.value || "—")}</div></div>`;
     }).join("");
-    const comment = persona.comment.trim()
-      ? `<div style="margin-top:14px;background:#faf5ec;border:1px dashed #cbb99d;border-radius:14px;padding:14px 16px;break-inside:avoid;">
-          <div style="font:600 10px/1.2 ui-monospace,monospace;letter-spacing:.1em;text-transform:uppercase;color:#6b5d4c;margin-bottom:5px;">Other comments</div>
-          <div style="font:400 15px/1.4 Georgia,serif;color:#241d12;white-space:pre-wrap;">${esc(persona.comment)}</div></div>`
-      : "";
+    const commentCard = `<div style="background:#faf5ec;border:1px dashed #cbb99d;border-radius:14px;padding:12px 14px;break-inside:avoid;">
+        <div style="font:600 10px/1.2 ui-monospace,monospace;letter-spacing:.1em;text-transform:uppercase;color:#6b5d4c;margin-bottom:5px;">Other comments</div>
+        <div style="font:400 15px/1.4 Georgia,serif;color:#241d12;white-space:pre-wrap;">${esc(persona.comment.trim() || "—")}</div></div>`;
     const avatar = `<svg width="120" height="120" viewBox="0 0 100 100" style="display:block;margin:0 auto;">
         <circle cx="50" cy="50" r="48" fill="#f6efe1" stroke="#d9c6a5" stroke-width="2"/>
         <circle cx="50" cy="40" r="17" fill="#b7a687"/>
@@ -81,8 +78,7 @@ export default function Facilitator() {
     return `<div style="text-align:center;margin:2px 0 18px;">${avatar}
         <p class="k" style="margin-top:12px;">Learning persona</p>
         <h1 style="margin:2px 0 0;">${esc(persona.name || "—")}</h1></div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">${cards}</div>
-      ${comment}
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">${cards}${commentCard}</div>
       <p class="foot">Saved ${esc(new Date().toLocaleString())}</p>`;
   };
 

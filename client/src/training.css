@@ -106,6 +106,7 @@
 .lp-card .lp-k{font-family:var(--tg-mono); font-size:.58rem; letter-spacing:.11em; text-transform:uppercase;
   color:var(--cink,var(--tg-ink-soft)); display:block; margin-bottom:.26rem;}
 .lp-card .lp-v{font-family:var(--tg-serif); font-size:1rem; color:var(--tg-ink); line-height:1.25;}
+.lp-card.lp-comment-card .lp-v{white-space:pre-wrap;}
 .lp-avatar-block{display:flex; flex-direction:column; align-items:center; text-align:center;
   padding:.3rem clamp(.3rem,1.5vw,1.1rem); position:sticky; top:1rem;}
 .lp-avatar{width:clamp(88px,13vw,140px); height:clamp(88px,13vw,140px); border-radius:50%;

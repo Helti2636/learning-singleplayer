@@ -60,7 +60,7 @@ export default function Home() {
           <h1>Imagine the perfect training exists</h1>
           <blockquote className="tg-quote">
             <em>“{FRAMING.intro}”</em>
-            <span>You’ll answer three questions from three perspectives — then compare.</span>
+            <span>A short, guided reflection on how you like to learn — one step at a time.</span>
           </blockquote>
         </header>
 

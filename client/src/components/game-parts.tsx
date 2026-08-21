@@ -222,11 +222,12 @@ export function PersonaIntake({
   );
 }
 
-/** The pretty persona overview: anonymous avatar centred, answers as colourful cards. */
+/** The pretty persona overview: anonymous avatar centred, answers as colourful cards.
+ *  Six cards on the left, six on the right (the last being the open comment). */
 export function PersonaOverview({ persona }: { persona: Persona }) {
   const rows = personaRows(persona).map((r, i) => ({ ...r, color: `lp-c${(i % 7) + 1}` }));
-  const left = rows.filter((_, i) => i % 2 === 0);
-  const right = rows.filter((_, i) => i % 2 === 1);
+  const left = rows.slice(0, 6);
+  const right = rows.slice(6); // the remaining five attributes
   const card = (r: { label: string; value: string; color: string }, key: number) => (
     <div className={`lp-card ${r.color}`} key={key}>
       <span className="lp-k">{r.label}</span>
@@ -242,14 +243,14 @@ export function PersonaOverview({ persona }: { persona: Persona }) {
           <span className="tg-eyebrow" style={{ marginTop: "1rem" }}>Learning persona</span>
           <p className="lp-name tg-serif">{persona.name || "Persona"}</p>
         </div>
-        <div className="lp-col">{right.map(card)}</div>
-      </div>
-      {persona.comment.trim() && (
-        <div className="lp-comment">
-          <span className="lp-k">Other comments</span>
-          <span className="lp-v">{persona.comment}</span>
+        <div className="lp-col">
+          {right.map(card)}
+          <div className="lp-card lp-comment-card">
+            <span className="lp-k">Other comments</span>
+            <span className="lp-v">{persona.comment.trim() || "—"}</span>
+          </div>
         </div>
-      )}
+      </div>
     </div>
   );
 }
