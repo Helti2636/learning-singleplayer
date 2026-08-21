@@ -208,9 +208,11 @@ export const PERSONA_QUESTIONS: PersonaQuestion[] = [
   },
 ];
 
-// Every persona question offers an open "Other" choice that reveals a free-text field.
+// Every persona question ends with "N/A" (not applicable) and an open "Other"
+// choice that reveals a free-text field.
 for (const q of PERSONA_QUESTIONS) {
-  if (!q.options.includes("Other")) q.options = [...q.options, "Other"];
+  const base = q.options.filter((o) => o !== "Other" && o !== "N/A");
+  q.options = [...base, "N/A", "Other"];
   q.allowOther = true;
 }
 
