@@ -55,7 +55,7 @@ export default function Game() {
     return shell(
       <>
         <div className="tg-round-line"><span className="tg-eyebrow">That’s a wrap · thank you</span></div>
-        <h1 className="tg-topic" style={{ marginBottom: "1.4rem" }}>Your learning persona</h1>
+        <h1 className="tg-topic" style={{ marginBottom: "1.4rem" }}>Session complete</h1>
         <PersonaOverview persona={persona} />
         <div className="tg-controls"><div className="buttons">
           <button className="tg-btn ghost" onClick={() => goto(step - 1)}>← Back</button>
