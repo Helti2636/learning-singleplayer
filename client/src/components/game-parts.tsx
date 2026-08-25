@@ -370,13 +370,13 @@ export function BackpackScene({
         {pool.map((it) => (
           <ItemCard key={it.id} id={it.id} dragging={drag?.id === it.id} onPointerDown={start(it.id, "pool")} />
         ))}
-        {!readOnly && (
-          <button type="button" className="bp-card bp-card-add" onClick={() => !full && setCustomOpen((o) => !o)}
-            disabled={full} title={full ? "Backpack is full" : "Add your own"}>
-            <ItemIcon id={CUSTOM_PREFIX} />
-            <span className="bp-name">Something else</span>
-          </button>
-        )}
+        <button type="button" className={`bp-card bp-card-add${readOnly ? " ro" : ""}`}
+          onClick={() => !readOnly && !full && setCustomOpen((o) => !o)}
+          disabled={readOnly || full}
+          title={readOnly ? "Something else — the active player can add one" : full ? "Backpack is full" : "Add your own"}>
+          <ItemIcon id={CUSTOM_PREFIX} />
+          <span className="bp-name">Something else</span>
+        </button>
       </div>
 
       {!readOnly && customOpen && !full && (

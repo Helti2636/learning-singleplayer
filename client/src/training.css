@@ -154,6 +154,7 @@
 .bp-card-add{font:inherit; cursor:pointer; border:1px dashed #bfa06a; background:#fbf6ea;}
 .bp-card-add:hover:not(:disabled){background:#f3ead2;}
 .bp-card-add:disabled{opacity:.4; cursor:not-allowed;}
+.bp-card-add.ro, .bp-card-add.ro:disabled{opacity:1; cursor:default;}
 .bp-custom-row{position:relative; z-index:2; display:flex; flex-wrap:wrap; gap:.5rem; justify-content:center; align-items:center; margin-top:.9rem;}
 .bp-custom-input{font-family:var(--tg-serif); font-size:.95rem; padding:.55rem .8rem; border-radius:10px; border:1px solid #c2a877; background:#fffdf8; color:#3a2a1a; min-width:230px;}
 .bp-custom-input:focus{outline:none; border-color:#a9773f; box-shadow:0 0 0 3px rgba(169,119,63,.2);}
