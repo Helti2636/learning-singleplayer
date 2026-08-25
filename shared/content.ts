@@ -81,6 +81,22 @@ export const ITEMS: BackpackItem[] = [
 
 export const ITEM_BY_ID: Record<string, BackpackItem> = Object.fromEntries(ITEMS.map((i) => [i.id, i]));
 
+// A packed slot can be a preset item id OR a free-text "something else" the
+// person names themselves, stored as "custom:<their text>".
+export const CUSTOM_PREFIX = "custom:";
+export const CUSTOM_MAX_LEN = 40;
+export function isCustomItem(id: string): boolean {
+  return typeof id === "string" && id.startsWith(CUSTOM_PREFIX);
+}
+export function customItemText(id: string): string {
+  return isCustomItem(id) ? id.slice(CUSTOM_PREFIX.length) : "";
+}
+/** Display name for any packed slot — preset or custom. */
+export function itemName(id: string): string {
+  if (isCustomItem(id)) return customItemText(id).trim() || "Something else";
+  return ITEM_BY_ID[id]?.name ?? id;
+}
+
 export const MAX_ITEMS = 3;
 
 // ---------------------------------------------------------------------------

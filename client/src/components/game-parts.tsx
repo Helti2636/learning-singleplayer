@@ -1,7 +1,7 @@
 import { ArrowLeft, Check, Copy } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import type { Answer, Persona } from "@shared/schema";
-import { ROUNDS, PERSONA_QUESTIONS, personaRows, ITEMS, ITEM_BY_ID } from "@shared/content";
+import { ROUNDS, PERSONA_QUESTIONS, personaRows, ITEMS, itemName, CUSTOM_PREFIX, CUSTOM_MAX_LEN } from "@shared/content";
 import { ItemIcon } from "@/components/item-icon";
 
 /** Column labels for the two perspectives: you, then the persona. */
@@ -283,7 +283,7 @@ function ItemCard({ id, dragging, onPointerDown }: { id: string; dragging?: bool
   return (
     <div className={`bp-card ${dragging ? "is-dragging" : ""}`} onPointerDown={onPointerDown}>
       <ItemIcon id={id} />
-      <span className="bp-name">{ITEM_BY_ID[id]?.name ?? id}</span>
+      <span className="bp-name">{itemName(id)}</span>
     </div>
   );
 }
@@ -305,9 +305,19 @@ export function BackpackScene({
   readOnly?: boolean;
 }) {
   const [drag, setDrag] = useState<Drag | null>(null);
+  const [customOpen, setCustomOpen] = useState(false);
+  const [customText, setCustomText] = useState("");
   const dropRef = useRef<HTMLDivElement>(null);
   const pool = ITEMS.filter((i) => !packed.includes(i.id));
   const full = packed.length >= maxItems;
+
+  const addCustom = () => {
+    const text = customText.trim();
+    if (!text || full) return;
+    onAdd(CUSTOM_PREFIX + text);
+    setCustomText("");
+    setCustomOpen(false);
+  };
 
   useEffect(() => {
     if (!drag) return;
@@ -360,7 +370,25 @@ export function BackpackScene({
         {pool.map((it) => (
           <ItemCard key={it.id} id={it.id} dragging={drag?.id === it.id} onPointerDown={start(it.id, "pool")} />
         ))}
+        {!readOnly && (
+          <button type="button" className="bp-card bp-card-add" onClick={() => !full && setCustomOpen((o) => !o)}
+            disabled={full} title={full ? "Backpack is full" : "Add your own"}>
+            <ItemIcon id={CUSTOM_PREFIX} />
+            <span className="bp-name">Something else</span>
+          </button>
+        )}
       </div>
+
+      {!readOnly && customOpen && !full && (
+        <div className="bp-custom-row">
+          <input className="bp-custom-input" autoFocus maxLength={CUSTOM_MAX_LEN} value={customText}
+            placeholder="Name your own item…"
+            onChange={(e) => setCustomText(e.target.value)}
+            onKeyDown={(e) => { if (e.key === "Enter") addCustom(); if (e.key === "Escape") { setCustomOpen(false); setCustomText(""); } }} />
+          <button type="button" className="tg-btn" onClick={addCustom} disabled={!customText.trim()}>Add to backpack</button>
+          <button type="button" className="tg-btn ghost" onClick={() => { setCustomOpen(false); setCustomText(""); }}>Cancel</button>
+        </div>
+      )}
 
       {drag && (
         <div className="bp-ghost" style={{ left: drag.x, top: drag.y }}>
@@ -382,7 +410,7 @@ export function BackpackView({ title, items, maxItems }: { title: string; items:
           return (
             <div key={i} className={`bp-view-item ${id ? "" : "empty"}`}>
               {id ? <ItemIcon id={id} size={34} /> : <span className="bp-view-dash">—</span>}
-              <span className="bp-view-name">{id ? ITEM_BY_ID[id]?.name : ""}</span>
+              <span className="bp-view-name">{id ? itemName(id) : ""}</span>
             </div>
           );
         })}

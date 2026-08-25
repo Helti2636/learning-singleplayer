@@ -2,6 +2,7 @@ import type { GameState, Persona } from "@shared/schema";
 import {
   TOTAL_STEPS, END_STEP, ROUNDS, isPersonaStep, isFacilitatorStep, stepInfo, skipTarget,
   emptyPersona, PERSONA_QUESTIONS, ITEM_BY_ID, MAX_ITEMS,
+  isCustomItem, customItemText, CUSTOM_PREFIX, CUSTOM_MAX_LEN,
 } from "@shared/content";
 
 export function generateRoomCode(): string {
@@ -164,11 +165,19 @@ export class MemStorage {
 
   addItem(roomCode: string, byId: string, itemId: string): boolean {
     const room = this.rooms.get(roomCode);
-    if (!room || !ITEM_BY_ID[itemId]) return false;
+    if (!room) return false;
+    let id = itemId;
+    if (isCustomItem(itemId)) {
+      const text = customItemText(itemId).trim().slice(0, CUSTOM_MAX_LEN);
+      if (!text) return false;
+      id = CUSTOM_PREFIX + text;
+    } else if (!ITEM_BY_ID[itemId]) {
+      return false;
+    }
     const target = this.backpackTarget(room, byId);
     if (!target) return false;
-    if (target.includes(itemId) || target.length >= room.maxItems) return false;
-    target.push(itemId);
+    if (target.includes(id) || target.length >= room.maxItems) return false;
+    target.push(id);
     return true;
   }
 

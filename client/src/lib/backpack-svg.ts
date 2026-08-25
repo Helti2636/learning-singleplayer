@@ -1,7 +1,7 @@
 // SVG-string versions of the backpack art, for the print/PDF documents (the
 // on-screen React components can't be reused inside a printed window).
 
-import { ITEM_BY_ID } from "@shared/content";
+import { isCustomItem, itemName } from "@shared/content";
 import { esc } from "@/lib/print";
 
 // Item illustrations as raw SVG inner markup (fixed colours; match item-icon.tsx).
@@ -21,8 +21,10 @@ const SHAPES: Record<string, string> = {
   powerbank: `<rect x="15" y="8" width="18" height="32" rx="3" fill="#5a6472"/><rect x="19" y="12" width="10" height="4" rx="1" fill="#9aa6b5"/><path d="M25 21 20 30 24 30 23 36 29 26 25 26 26 21 Z" fill="#e2b24a" stroke="none"/><rect x="21" y="37" width="6" height="3" rx="1" fill="#3a2a1a"/>`,
 };
 
+const CUSTOM_SHAPE = `<circle cx="24" cy="24" r="15" fill="#c9925a"/><text x="24" y="32" text-anchor="middle" font-size="21" font-weight="700" font-family="Georgia, 'Times New Roman', serif" fill="#4a3720" stroke="none">?</text>`;
+
 function itemIconSvg(id: string, size: number): string {
-  const inner = SHAPES[id] ?? `<circle cx="24" cy="24" r="12" fill="#c9925a"/>`;
+  const inner = isCustomItem(id) ? CUSTOM_SHAPE : (SHAPES[id] ?? `<circle cx="24" cy="24" r="12" fill="#c9925a"/>`);
   return `<svg width="${size}" height="${size}" viewBox="0 0 48 48" fill="none" stroke="#4a3720" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${inner}</svg>`;
 }
 
@@ -47,7 +49,7 @@ export function backpackImageHtml(title: string, items: string[], maxItems: numb
   const slots = Array.from({ length: maxItems }).map((_, i) => {
     const id = items[i];
     const icon = id ? itemIconSvg(id, 30) : `<span style="color:#8a6a3e;font-size:18px;">—</span>`;
-    const name = id ? esc(ITEM_BY_ID[id]?.name ?? id) : "";
+    const name = id ? esc(itemName(id)) : "";
     return `<div style="flex:1;background:rgba(255,255,255,.72);border:1px solid rgba(74,55,32,.25);border-radius:10px;padding:8px 4px;display:flex;flex-direction:column;align-items:center;gap:4px;min-height:64px;justify-content:center;">${icon}<span style="font:500 11px/1.05 Georgia,serif;color:#3a2a1a;text-align:center;">${name}</span></div>`;
   }).join("");
   return `<div style="break-inside:avoid;">

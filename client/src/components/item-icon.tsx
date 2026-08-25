@@ -1,6 +1,8 @@
 // Hand-drawn object illustrations, one warm style matching the backpack.
 // Fixed illustration colours (see training.css) so they read in light & dark.
 
+import { isCustomItem } from "@shared/content";
+
 const shapes: Record<string, React.ReactNode> = {
   map: (
     <>
@@ -104,6 +106,15 @@ const shapes: Record<string, React.ReactNode> = {
   ),
 };
 
+// A drawn question mark for the "something else" custom item.
+const customShape = (
+  <>
+    <circle cx="24" cy="24" r="15" fill="#c9925a" />
+    <text x="24" y="32" textAnchor="middle" fontSize="21" fontWeight="700"
+      fontFamily="Georgia, 'Times New Roman', serif" fill="#4a3720" stroke="none">?</text>
+  </>
+);
+
 export function ItemIcon({ id, size = 46 }: { id: string; size?: number }) {
   return (
     <svg
@@ -117,7 +128,7 @@ export function ItemIcon({ id, size = 46 }: { id: string; size?: number }) {
       strokeLinejoin="round"
       aria-hidden="true"
     >
-      {shapes[id] ?? <circle cx="24" cy="24" r="12" fill="#c9925a" />}
+      {isCustomItem(id) ? customShape : (shapes[id] ?? <circle cx="24" cy="24" r="12" fill="#c9925a" />)}
     </svg>
   );
 }
