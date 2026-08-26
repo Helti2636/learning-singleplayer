@@ -50,14 +50,33 @@ export default function Game() {
     );
   }
 
-  // ---- End (wrap-up) ----
+  // ---- End (wrap-up: full comparison, mirrors the multiplayer end card) ----
   if (gameState.phase === "board" || info.kind === "end") {
+    const personaLabel = persona.name || "your persona";
     return shell(
       <>
         <div className="tg-round-line"><span className="tg-eyebrow">That’s a wrap · thank you</span></div>
         <h1 className="tg-topic" style={{ marginBottom: "1.4rem" }}>Session complete</h1>
+
+        {/* Reflection: you ↔ the persona */}
+        <div className="tg-round-line"><span className="tg-eyebrow">Reflection · you ↔ {personaLabel}</span></div>
+        <h1 className="tg-topic" style={{ marginBottom: "1.4rem" }}>How your answers compare</h1>
+        <Board answers={gameState.answers} persona={persona} />
+
+        {/* Backpacks: you ↔ the persona */}
+        <div className="tg-round-line" style={{ marginTop: "2.4rem" }}><span className="tg-eyebrow">Backpacks · you ↔ {personaLabel}</span></div>
+        <h1 className="tg-topic" style={{ marginBottom: "1.4rem" }}>What you’d pack vs. what your persona needs</h1>
+        <div className="bp-compare">
+          <BackpackView title="You" items={gameState.backpackSelf} maxItems={gameState.maxItems} />
+          <BackpackView title={persona.name || "Your persona"} items={gameState.backpackPersona} maxItems={gameState.maxItems} />
+        </div>
+
+        {/* The persona card */}
+        <div className="tg-round-line" style={{ marginTop: "2.4rem" }}><span className="tg-eyebrow">Your learning persona</span></div>
+        <h1 className="tg-topic" style={{ marginBottom: "1.4rem" }}>{persona.name || "Your persona"}</h1>
         <PersonaOverview persona={persona} />
-        <div className="tg-controls"><div className="buttons">
+
+        <div className="tg-controls" style={{ marginTop: "1.6rem" }}><div className="buttons">
           <button className="tg-btn ghost" onClick={() => goto(step - 1)}>← Back</button>
           <button className="tg-btn ghost" onClick={room.leave}>Leave session</button>
         </div></div>
