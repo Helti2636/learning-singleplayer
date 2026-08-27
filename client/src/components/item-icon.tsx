@@ -112,6 +112,20 @@ const shapes: Record<string, React.ReactNode> = {
       <rect x="16" y="22" width="8" height="4" rx="1.2" fill="#f4ecd6" stroke="none" />
     </>
   ),
+  clock: (
+    <>
+      <circle cx="14" cy="12" r="4" fill="#d9b25f" />
+      <circle cx="34" cy="12" r="4" fill="#d9b25f" />
+      <rect x="22" y="6" width="4" height="4" rx="1" fill="#9a6b38" />
+      <circle cx="24" cy="27" r="14" fill="#e9e0cd" />
+      <circle cx="24" cy="27" r="10" fill="#f6efdd" />
+      <path d="M24 27 V19" />
+      <path d="M24 27 L30 29" />
+      <circle cx="24" cy="27" r="1.6" fill="#4a3720" stroke="none" />
+      <path d="M15 39 L12 43" />
+      <path d="M33 39 L36 43" />
+    </>
+  ),
 };
 
 // A drawn question mark for the "something else" custom item.

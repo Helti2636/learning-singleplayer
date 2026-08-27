@@ -93,6 +93,7 @@ export const ITEMS: BackpackItem[] = [
   { id: "boots", name: "Boots" },
   { id: "powerbank", name: "Powerbank" },
   { id: "swissknife", name: "Swiss knife" },
+  { id: "clock", name: "Clock" },
 ];
 
 export const ITEM_BY_ID: Record<string, BackpackItem> = Object.fromEntries(ITEMS.map((i) => [i.id, i]));
