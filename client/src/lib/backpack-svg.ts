@@ -19,6 +19,7 @@ const SHAPES: Record<string, string> = {
   matches: `<rect x="22" y="18" width="4" height="22" rx="1.5" fill="#caa26a"/><path d="M24 8 c3 3 4 5 4 7 a4 4 0 0 1-8 0 c0-2 1-4 4-7 Z" fill="#e07b3a"/><path d="M24 12 c1.5 1.5 2 2.6 2 3.6 a2 2 0 0 1-4 0 c0-1 .7-2 2-3.6 Z" fill="#f2c14e" stroke="none"/>`,
   boots: `<path d="M17 8 h6 v14 l7 4 c2.5 1.4 2 5 -1 5 H17 a2 2 0 0 1-2-2 V10 a2 2 0 0 1 2-2 Z" fill="#7a5230"/><path d="M14 27 H31" stroke-width="1.8"/>`,
   powerbank: `<rect x="15" y="8" width="18" height="32" rx="3" fill="#5a6472"/><rect x="19" y="12" width="10" height="4" rx="1" fill="#9aa6b5"/><path d="M25 21 20 30 24 30 23 36 29 26 25 26 26 21 Z" fill="#e2b24a" stroke="none"/><rect x="21" y="37" width="6" height="3" rx="1" fill="#3a2a1a"/>`,
+  swissknife: `<path d="M31 23 L44 12 Q46 11 45.5 14.5 L34 26 Z" fill="#cdd0d5"/><rect x="7" y="18" width="27" height="12" rx="6" fill="#c0392b"/><rect x="18" y="20" width="4" height="8" rx="1.2" fill="#f4ecd6" stroke="none"/><rect x="16" y="22" width="8" height="4" rx="1.2" fill="#f4ecd6" stroke="none"/>`,
 };
 
 const CUSTOM_SHAPE = `<circle cx="24" cy="24" r="15" fill="#c9925a"/><text x="24" y="32" text-anchor="middle" font-size="21" font-weight="700" font-family="Georgia, 'Times New Roman', serif" fill="#4a3720" stroke="none">?</text>`;

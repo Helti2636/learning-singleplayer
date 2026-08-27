@@ -104,6 +104,14 @@ const shapes: Record<string, React.ReactNode> = {
       <rect x="21" y="37" width="6" height="3" rx="1" fill="#3a2a1a" />
     </>
   ),
+  swissknife: (
+    <>
+      <path d="M31 23 L44 12 Q46 11 45.5 14.5 L34 26 Z" fill="#cdd0d5" />
+      <rect x="7" y="18" width="27" height="12" rx="6" fill="#c0392b" />
+      <rect x="18" y="20" width="4" height="8" rx="1.2" fill="#f4ecd6" stroke="none" />
+      <rect x="16" y="22" width="8" height="4" rx="1.2" fill="#f4ecd6" stroke="none" />
+    </>
+  ),
 };
 
 // A drawn question mark for the "something else" custom item.
