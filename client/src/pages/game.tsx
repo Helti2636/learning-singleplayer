@@ -106,6 +106,8 @@ export default function Game() {
   if (info.kind === "reflectionQ") {
     const content = ROUNDS[info.question];
     const chosen = gameState.answers.find((a) => a.perspective === info.perspective && a.question === info.question);
+    const otherIdx = content.options.indexOf("Other");
+    const otherChosen = chosen?.optionIndex === otherIdx;
     return shell(
       <>
         <div className="tg-round-line">
@@ -115,11 +117,19 @@ export default function Game() {
         <div className="tg-options">
           {content.options.map((opt, i) => (
             <button key={i} className={`tg-opt-card ${chosen?.optionIndex === i ? "sel" : ""}`}
-              onClick={() => room.setAnswer(info.perspective, info.question, i)}>
+              onClick={() => room.setAnswer(info.perspective, info.question, i, i === otherIdx ? (chosen?.otherText ?? "") : "")}>
               {opt}
             </button>
           ))}
         </div>
+        {otherChosen && (
+          <div className="tg-field" style={{ marginTop: "1rem", maxWidth: "34rem" }}>
+            <label className="tg-label" htmlFor="ro">Your own answer</label>
+            <input id="ro" className="tg-input" autoFocus placeholder="Type your own answer…" maxLength={120}
+              value={chosen?.otherText ?? ""}
+              onChange={(e) => room.setAnswer(info.perspective, info.question, otherIdx, e.target.value)} />
+          </div>
+        )}
         <NavBar onBack={() => goto(step - 1)} onNext={() => goto(step + 1)} nextDisabled={!chosen} />
       </>
     );

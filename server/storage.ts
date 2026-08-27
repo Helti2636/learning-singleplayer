@@ -140,7 +140,8 @@ export class MemStorage {
     byId: string,
     perspective: number,
     question: number,
-    optionIndex: number
+    optionIndex: number,
+    otherText?: string
   ): boolean {
     const room = this.rooms.get(roomCode);
     if (!room || !this.isParticipant(room, byId)) return false;
@@ -148,9 +149,10 @@ export class MemStorage {
     const options = ROUNDS[question]?.options;
     if (!options || optionIndex < 0 || optionIndex >= options.length) return false;
 
+    const other = String(otherText ?? "").slice(0, 120);
     const existing = room.answers.find((a) => a.perspective === perspective && a.question === question);
-    if (existing) existing.optionIndex = optionIndex;
-    else room.answers.push({ perspective, question, optionIndex });
+    if (existing) { existing.optionIndex = optionIndex; existing.otherText = other; }
+    else room.answers.push({ perspective, question, optionIndex, otherText: other });
     return true;
   }
 

@@ -77,9 +77,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (room && storage.setStep(room.roomCode, socket.id, step)) emit(room.roomCode);
     });
 
-    socket.on("set_answer", (perspective: number, question: number, optionIndex: number) => {
+    socket.on("set_answer", (perspective: number, question: number, optionIndex: number, otherText?: string) => {
       const room = storage.getRoomByAnyId(socket.id);
-      if (room && storage.setAnswer(room.roomCode, socket.id, perspective, question, optionIndex)) {
+      if (room && storage.setAnswer(room.roomCode, socket.id, perspective, question, optionIndex, otherText)) {
         emit(room.roomCode);
       }
     });

@@ -2,7 +2,7 @@ import { type ReactNode } from "react";
 import { useRoute } from "wouter";
 import { useRoom } from "@/lib/useRoom";
 import { RoomBar, Board, PersonaIntake, PersonaOverview, BackpackScene, BackpackView } from "@/components/game-parts";
-import { FRAMING, BACKPACK_FRAMING, ROUNDS, stepInfo, isPersonaStep, personaRows, skipTarget, skipLabel } from "@shared/content";
+import { FRAMING, BACKPACK_FRAMING, ROUNDS, roundOptionText, stepInfo, isPersonaStep, personaRows, skipTarget, skipLabel } from "@shared/content";
 import { printHtml, esc } from "@/lib/print";
 import { backpackImageHtml } from "@/lib/backpack-svg";
 
@@ -36,7 +36,7 @@ export default function Facilitator() {
 
   const answerCell = (perspective: number, q: number) => {
     const a = gameState.answers.find((x) => x.perspective === perspective && x.question === q);
-    return a ? ROUNDS[q].options[a.optionIndex] : "—";
+    return (a ? roundOptionText(q, a.optionIndex, a.otherText) : null) ?? "—";
   };
   // ---- Export documents ----
   const boardDoc = () => {

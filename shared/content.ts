@@ -47,6 +47,21 @@ export const ROUNDS: RoundContent[] = [
   },
 ];
 
+// Every reflection question ends with an open "Other" choice that reveals a
+// free-text field, so people can give an answer that isn't in the list.
+for (const r of ROUNDS) {
+  if (!r.options.includes("Other")) r.options = [...r.options, "Other"];
+}
+
+/** Display text for a reflection answer — the chosen option, or the free text when "Other". */
+export function roundOptionText(question: number, optionIndex: number, otherText?: string): string | null {
+  const opts = ROUNDS[question]?.options;
+  if (!opts || optionIndex == null || optionIndex < 0 || optionIndex >= opts.length) return null;
+  const opt = opts[optionIndex];
+  if (opt === "Other") return (otherText ?? "").trim() || "Other";
+  return opt;
+}
+
 export const TOTAL_ROUNDS = ROUNDS.length;
 
 // ---------------------------------------------------------------------------

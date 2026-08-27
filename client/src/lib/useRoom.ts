@@ -79,8 +79,8 @@ export function useRoom(roomCode: string, role: Role) {
     error,
     start: () => socket.emit("start"),
     setStep: (step: number) => socket.emit("set_step", step),
-    setAnswer: (perspective: number, question: number, optionIndex: number) =>
-      socket.emit("set_answer", perspective, question, optionIndex),
+    setAnswer: (perspective: number, question: number, optionIndex: number, otherText?: string) =>
+      socket.emit("set_answer", perspective, question, optionIndex, otherText),
     setPersona: (persona: Persona) => socket.emit("set_persona", persona),
     takeControl: () => socket.emit("take_control"),
     addItem: (id: string) => socket.emit("add_item", id),

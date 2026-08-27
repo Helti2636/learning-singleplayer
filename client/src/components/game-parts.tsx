@@ -1,7 +1,7 @@
 import { ArrowLeft, Check, Copy } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import type { Answer, Persona } from "@shared/schema";
-import { ROUNDS, PERSONA_QUESTIONS, personaRows, ITEMS, itemName, CUSTOM_PREFIX, CUSTOM_MAX_LEN } from "@shared/content";
+import { ROUNDS, PERSONA_QUESTIONS, personaRows, roundOptionText, ITEMS, itemName, CUSTOM_PREFIX, CUSTOM_MAX_LEN } from "@shared/content";
 import { ItemIcon } from "@/components/item-icon";
 
 /** Column labels for the two perspectives: you, then the persona. */
@@ -35,7 +35,7 @@ function AvatarHead() {
 
 export function answerText(answers: Answer[], perspective: number, question: number): string | null {
   const a = answers.find((x) => x.perspective === perspective && x.question === question);
-  return a ? ROUNDS[question].options[a.optionIndex] : null;
+  return a ? roundOptionText(question, a.optionIndex, a.otherText) : null;
 }
 
 export function RoomBar({

@@ -14,6 +14,7 @@ export const answerSchema = z.object({
   perspective: z.number(),
   question: z.number(),
   optionIndex: z.number(),
+  otherText: z.string().optional(), // free text used when the chosen option is "Other"
 });
 export type Answer = z.infer<typeof answerSchema>;
 
@@ -61,7 +62,7 @@ export interface ClientToServerEvents {
   ) => void;
   start: () => void;                                    // facilitator begins the session
   set_step: (step: number) => void;                     // navigate
-  set_answer: (perspective: number, question: number, optionIndex: number) => void;
+  set_answer: (perspective: number, question: number, optionIndex: number, otherText?: string) => void;
   set_persona: (persona: Persona) => void;   // whole persona object (name, answers, otherTexts, comment)
   take_control: () => void;   // during the persona intake: grab the pen (participant or facilitator)
   add_item: (itemId: string) => void;        // pack an item into the current backpack (or the demo)
