@@ -4,6 +4,7 @@
 export interface RoundContent {
   topic: string;             // question from the "yourself" perspective
   topicPersona: string;      // question from the persona perspective
+  topicNeutral?: string;     // person-neutral wording for side-by-side comparisons (falls back to `topic`)
   options: string[];         // answer options (self perspective)
   optionsPersona?: string[]; // answer options for the persona perspective (falls back to `options`)
 }
@@ -19,6 +20,7 @@ export const ROUNDS: RoundContent[] = [
   {
     topic: "What mattered most to you?",
     topicPersona: "What would matter most to them?",
+    topicNeutral: "What mattered most?",
     options: [
       "Having the opportunity to practice through activities or exercises.",
       "Engaging in meaningful discussions with peers.",
@@ -79,6 +81,12 @@ for (const r of ROUNDS) {
 export function roundTopic(question: number, perspective: number): string {
   const r = ROUNDS[question];
   return perspective === 1 ? r.topicPersona : r.topic;
+}
+
+/** Person-neutral question wording, used for side-by-side comparison boards. */
+export function roundTopicNeutral(question: number): string {
+  const r = ROUNDS[question];
+  return r.topicNeutral ?? r.topic;
 }
 
 /** The answer options for a perspective (0 = yourself, 1 = the persona). */

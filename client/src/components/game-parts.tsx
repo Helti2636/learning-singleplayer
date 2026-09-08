@@ -1,7 +1,7 @@
 import { ArrowLeft, Check, Copy } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import type { Answer, Persona } from "@shared/schema";
-import { ROUNDS, PERSONA_QUESTIONS, personaRows, roundOptionText, roundTopic, ITEMS, itemName, CUSTOM_PREFIX, CUSTOM_MAX_LEN } from "@shared/content";
+import { ROUNDS, PERSONA_QUESTIONS, personaRows, roundOptionText, roundTopicNeutral, ITEMS, itemName, CUSTOM_PREFIX, CUSTOM_MAX_LEN } from "@shared/content";
 import { ItemIcon } from "@/components/item-icon";
 
 /** Column labels for the two perspectives: you, then the persona. */
@@ -82,7 +82,7 @@ export function Board({ answers, persona }: { answers: Answer[]; persona: Person
     <div className="tg-board">
       {ROUNDS.map((_r, q) => (
         <div className="tg-board-row" key={q}>
-          <div className="tg-board-qlabel">{roundTopic(q, 0)}</div>
+          <div className="tg-board-qlabel">{roundTopicNeutral(q)}</div>
           <div className="tg-board-cells">
             {[0, 1].map((p) => {
               const text = answerText(answers, p, q);
