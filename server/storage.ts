@@ -202,8 +202,14 @@ export class MemStorage {
     if (byId !== controller) return false;
     // Validate & clamp against the question set.
     const answers = PERSONA_QUESTIONS.map((q, i) => {
-      const v = Math.floor(Number(persona?.answers?.[i]));
-      return Number.isFinite(v) && v >= 0 && v < q.options.length ? v : -1;
+      const raw = Array.isArray(persona?.answers?.[i]) ? (persona.answers[i] as number[]) : [];
+      const out: number[] = [];
+      for (const v of raw) {
+        const n = Math.floor(Number(v));
+        if (Number.isFinite(n) && n >= 0 && n < q.options.length && !out.includes(n)) out.push(n);
+        if (out.length >= q.maxSelect) break;
+      }
+      return out;
     });
     const otherTexts = PERSONA_QUESTIONS.map((_, i) => String(persona?.otherTexts?.[i] ?? "").slice(0, 120));
     room.persona = {

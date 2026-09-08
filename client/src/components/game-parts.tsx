@@ -1,7 +1,7 @@
 import { ArrowLeft, Check, Copy } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import type { Answer, Persona } from "@shared/schema";
-import { ROUNDS, PERSONA_QUESTIONS, personaRows, roundOptionText, roundTopicNeutral, ITEMS, itemName, CUSTOM_PREFIX, CUSTOM_MAX_LEN } from "@shared/content";
+import { ROUNDS, PERSONA_QUESTIONS, isOtherOption, personaRows, roundOptionText, roundTopicNeutral, ITEMS, itemName, CUSTOM_PREFIX, CUSTOM_MAX_LEN } from "@shared/content";
 import { ItemIcon } from "@/components/item-icon";
 
 /** Column labels for the two perspectives: you, then the persona. */
@@ -9,8 +9,8 @@ export function perspectiveLabels(persona: Persona): string[] {
   return ["You", persona.name || "Persona"];
 }
 
-function setAt(arr: number[], i: number, v: number): number[] {
-  const next = PERSONA_QUESTIONS.map((_, k) => arr?.[k] ?? -1);
+function setAt(arr: number[][], i: number, v: number[]): number[][] {
+  const next = PERSONA_QUESTIONS.map((_, k) => arr?.[k] ?? []);
   next[i] = v;
   return next;
 }
@@ -196,22 +196,37 @@ export function PersonaIntake({
         </>
       )}
 
-      {kind === "personaQuestion" && q && (
+      {kind === "personaQuestion" && q && (() => {
+        const sel = view.answers?.[personaIndex] ?? [];
+        const full = sel.length >= q.maxSelect;
+        const otherPicked = sel.some((idx) => isOtherOption(q.options[idx] ?? ""));
+        const toggle = (i: number) => {
+          const cur = buf.answers?.[personaIndex] ?? [];
+          const next = cur.includes(i)
+            ? cur.filter((x) => x !== i)
+            : cur.length >= q.maxSelect ? cur : [...cur, i];
+          push({ ...buf, answers: setAt(buf.answers, personaIndex, next) });
+        };
+        return (
         <>
           {liveNote}
+          {q.maxSelect > 1 && (
+            <p className="tg-standing" style={{ marginBottom: ".9rem" }}>Select up to {q.maxSelect}.</p>
+          )}
           <div className="tg-options">
             {q.options.map((opt, i) => {
-              const sel = (view.answers?.[personaIndex] ?? -1) === i;
+              const on = sel.includes(i);
+              const locked = !on && full;
               return (
-                <button key={i} className={`tg-opt-card ${sel ? "sel" : ""} ${isController ? "" : "is-live"}`}
-                  onClick={isController ? () => push({ ...buf, answers: setAt(buf.answers, personaIndex, i) }) : undefined}
-                  aria-disabled={!isController}>
+                <button key={i} className={`tg-opt-card ${on ? "sel" : ""} ${isController ? "" : "is-live"} ${locked ? "pick-full" : ""}`}
+                  onClick={isController && !locked ? () => toggle(i) : undefined}
+                  aria-disabled={!isController || locked}>
                   {opt}
                 </button>
               );
             })}
           </div>
-          {q.options[(view.answers?.[personaIndex] ?? -1)] === "Other" && (
+          {otherPicked && (
             isController ? (
               <div className="tg-field" style={{ marginTop: "1rem", maxWidth: "28rem" }}>
                 <label className="tg-label" htmlFor="lo">Your own answer</label>
@@ -223,7 +238,8 @@ export function PersonaIntake({
             ) : null
           )}
         </>
-      )}
+        );
+      })()}
     </>
   );
 }

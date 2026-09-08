@@ -260,6 +260,9 @@
   background:var(--tg-accent); color:var(--tg-accent-ink); display:grid; place-items:center; font-size:.8rem; font-family:var(--tg-sans);
 }
 .tg-opt-card.locked{cursor:default;}
+.tg-opt-card.pick-full{opacity:.42; cursor:not-allowed;}
+.tg-opt-card.pick-full:hover{transform:none; box-shadow:none;}
+
 .tg-opt-card.locked:hover{transform:none; box-shadow:none;}
 .tg-lockbar{
   display:flex; align-items:center; justify-content:space-between; gap:1rem; flex-wrap:wrap;

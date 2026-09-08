@@ -189,7 +189,7 @@ export default function Game() {
     const isController = myId === gameState.controllerId;
     const nextDisabled =
       info.kind === "personaName" ? persona.name.trim() === ""
-      : info.kind === "personaQuestion" ? (persona.answers?.[info.personaIndex] ?? -1) < 0
+      : info.kind === "personaQuestion" ? (persona.answers?.[info.personaIndex] ?? []).length === 0
       : false;
     const driverLabel = gameState.controllerId === gameState.facilitator?.id ? "Your facilitator" : "You";
     return shell(

@@ -20,7 +20,7 @@ export type Answer = z.infer<typeof answerSchema>;
 
 export const personaSchema = z.object({
   name: z.string(),
-  answers: z.array(z.number()),  // one option index per persona question; -1 = unanswered
+  answers: z.array(z.array(z.number())), // selected option indices per persona question (multi-select)
   otherTexts: z.array(z.string()),// per-question free text, used when the answer is "Other"
   comment: z.string(),           // 12th open field
 });

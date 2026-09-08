@@ -164,30 +164,39 @@ export const MAX_ITEMS = 3;
 // ---------------------------------------------------------------------------
 
 export interface PersonaQuestion {
-  label: string;   // short label (card + board)
-  prompt: string;  // full question shown on the screen
+  label: string;
+  prompt: string;
   options: string[];
-  allowOther?: boolean; // reveals a free-text field when "Other" is picked
+  maxSelect: number;    // 1 = single choice; >1 = pick up to this many
+}
+
+/** The single catch-all option; picking it reveals a free-text field. */
+export const PERSONA_OTHER = "Other/I don’t know/Not applicable";
+export function isOtherOption(option: string): boolean {
+  return option.startsWith("Other");
 }
 
 export const PERSONA_QUESTIONS: PersonaQuestion[] = [
   {
     label: "Role & Level",
     prompt: "Which category best describes the learner?",
+    maxSelect: 2,
     options: [
       "General Service (GS)",
       "National Professional Officer (NPO)",
-      "Professional (P1–P2)",
-      "Professional (P3–P5)",
-      "Director (D1–D2)",
+      "Professional (P1-P2)",
+      "Professional (P3-P5)",
+      "Director (D1-D2)",
       "Senior Leader (ASG/USG)",
       "Consultant / Individual Contractor",
       "UN Volunteer (UNV)",
+      PERSONA_OTHER,
     ],
   },
   {
     label: "Primary Responsibilities",
     prompt: "What do they spend most of their time doing?",
+    maxSelect: 2,
     options: [
       "Programme coordination",
       "Project management",
@@ -200,21 +209,39 @@ export const PERSONA_QUESTIONS: PersonaQuestion[] = [
       "Administrative support",
       "Capacity development and training",
       "Field operations",
+      PERSONA_OTHER,
     ],
   },
   {
     label: "Years of UN Experience",
     prompt: "How long have they worked in the UN system?",
-    options: ["Less than 2 years", "2–5 years", "6–10 years", "11–20 years", "More than 20 years"],
+    maxSelect: 1,
+    options: [
+      "Less than 2 years",
+      "2-5 years",
+      "6-10 years",
+      "11-20 years",
+      "More than 20 years",
+      PERSONA_OTHER,
+    ],
   },
   {
     label: "Topic Expertise",
     prompt: "How familiar are they with the topic?",
-    options: ["New to the topic", "Basic awareness", "Working knowledge", "Advanced practitioner", "Subject matter expert"],
+    maxSelect: 1,
+    options: [
+      "New to the topic",
+      "Basic awareness",
+      "Working knowledge",
+      "Advanced practitioner",
+      "Subject matter expert",
+      PERSONA_OTHER,
+    ],
   },
   {
-    label: "This Learning…",
-    prompt: "What value does this learning provide to the learner?",
+    label: "This Learning Solution",
+    prompt: "What value does this learning solution provide to the learner?",
+    maxSelect: 2,
     options: [
       "Improves job performance",
       "Solves a current work challenge",
@@ -224,38 +251,86 @@ export const PERSONA_QUESTIONS: PersonaQuestion[] = [
       "Advances career development",
       "Increases confidence on the topic",
       "Improves programme or operational results",
+      PERSONA_OTHER,
     ],
   },
   {
     label: "Work Setting",
     prompt: "Where do they typically work?",
-    options: ["Headquarters", "Regional Office", "Country Office", "Field Duty Station", "Hybrid", "Fully remote", "Frequently travelling"],
+    maxSelect: 2,
+    options: [
+      "Headquarters",
+      "Regional Office",
+      "Country Office",
+      "Field Duty Station",
+      "Hybrid",
+      "Fully remote",
+      "Frequently travelling",
+      PERSONA_OTHER,
+    ],
   },
   {
     label: "Primary Language",
     prompt: "Which language are they most comfortable using?",
-    options: ["English", "French", "Spanish", "Arabic", "Russian", "Chinese", "Other"],
-    allowOther: true,
+    maxSelect: 1,
+    options: [
+      "English",
+      "French",
+      "Spanish",
+      "Arabic",
+      "Russian",
+      "Chinese",
+      PERSONA_OTHER,
+    ],
   },
   {
     label: "Internet Access",
     prompt: "What is their level of connectivity?",
-    options: ["Fully connected", "Generally connected", "Occasionally disconnected", "Connectivity-constrained", "Mobile-first access"],
+    maxSelect: 1,
+    options: [
+      "Fully connected",
+      "Generally connected",
+      "Occasionally disconnected",
+      "Connectivity-constrained",
+      "Mobile-first access",
+      PERSONA_OTHER,
+    ],
+  },
+  {
+    label: "Communication Channels",
+    prompt: "Where is this learner most likely to find out about learning opportunities?",
+    maxSelect: 3,
+    options: [
+      "Email / broadcast messages",
+      "iSeek / UN intranet",
+      "Microsoft Teams",
+      "Viva Engage / internal communities",
+      "UN Knowledge Gateway",
+      "Manager or supervisor",
+      "Colleagues / word of mouth",
+      "Communities of practice / professional networks",
+      "Town halls / staff meetings / events",
+      "Learning platform / learning catalogue",
+      PERSONA_OTHER,
+    ],
   },
   {
     label: "Learning Availability",
     prompt: "How much time can they realistically dedicate to learning?",
+    maxSelect: 1,
     options: [
       "Less than 30 minutes per week",
-      "30–60 minutes per week",
-      "1–2 hours per week",
-      "2–4 hours per week",
+      "30-60 minutes per week",
+      "1-2 hours per week",
+      "2-4 hours per week",
       "More than 4 hours per week",
+      PERSONA_OTHER,
     ],
   },
   {
     label: "Biggest Challenge",
     prompt: "What is their biggest barrier to success?",
+    maxSelect: 1,
     options: [
       "Lacks time for learning",
       "Has competing priorities",
@@ -263,54 +338,56 @@ export const PERSONA_QUESTIONS: PersonaQuestion[] = [
       "Lacks confidence on the topic",
       "Has unreliable internet access",
       "Receives limited manager support",
-      "Struggles to apply learning to the job",
       "Feels overwhelmed by information",
+      "Struggles to apply learning to the job",
+      PERSONA_OTHER,
     ],
   },
   {
     label: "Biggest Goal",
     prompt: "What are they trying to achieve?",
+    maxSelect: 1,
     options: [
-      "Works more efficiently",
-      "Delivers stronger programme results",
-      "Builds professional expertise",
-      "Gains confidence in their role",
-      "Leads others more effectively",
-      "Supports teams more effectively",
-      "Advances their career",
-      "Better serves partners and beneficiaries",
+      "Work more efficiently",
+      "Deliver stronger programme results",
+      "Build professional expertise",
+      "Gain confidence in their role",
+      "Lead others more effectively",
+      "Support teams more effectively",
+      "Advance their career",
+      "Better serve partners and beneficiaries",
+      PERSONA_OTHER,
     ],
   },
 ];
 
-// Every persona question ends with "N/A" (not applicable) and an open "Other"
-// choice that reveals a free-text field.
-for (const q of PERSONA_QUESTIONS) {
-  const base = q.options.filter((o) => o !== "Other" && o !== "N/A");
-  q.options = [...base, "N/A", "Other"];
-  q.allowOther = true;
-}
-
-// Structural persona shape (matches personaSchema in schema.ts).
 export interface PersonaData {
   name: string;
-  answers: number[];      // one option index per PERSONA_QUESTIONS entry; -1 = unanswered
+  answers: number[][];   // selected option indices per question (multi-select)
   otherTexts: string[];   // per-question free text, used when that question's answer is "Other"
   comment: string;        // 12th open field
 }
 
 export function emptyPersona(): PersonaData {
-  return { name: "", answers: PERSONA_QUESTIONS.map(() => -1), otherTexts: PERSONA_QUESTIONS.map(() => ""), comment: "" };
+  return { name: "", answers: PERSONA_QUESTIONS.map(() => []), otherTexts: PERSONA_QUESTIONS.map(() => ""), comment: "" };
 }
 
 /** Resolve one question's chosen value to display text ("" if unanswered). */
-export function personaValue(p: PersonaData, i: number): string {
+export function personaValues(p: PersonaData, i: number): string[] {
   const q = PERSONA_QUESTIONS[i];
-  const idx = p.answers?.[i];
-  if (idx == null || idx < 0 || idx >= q.options.length) return "";
-  const opt = q.options[idx];
-  if (opt === "Other") return (p.otherTexts?.[i] ?? "").trim() || "Other";
-  return opt;
+  const sel = p.answers?.[i] ?? [];
+  return sel
+    .filter((idx) => idx >= 0 && idx < q.options.length)
+    .map((idx) => {
+      const opt = q.options[idx];
+      if (isOtherOption(opt)) return (p.otherTexts?.[i] ?? "").trim() || opt;
+      return opt;
+    });
+}
+
+/** All chosen values for a question, joined for display ("" if unanswered). */
+export function personaValue(p: PersonaData, i: number): string {
+  return personaValues(p, i).join(" · ");
 }
 
 export function personaRows(p: PersonaData): { label: string; value: string }[] {
@@ -319,7 +396,7 @@ export function personaRows(p: PersonaData): { label: string; value: string }[] 
 
 /** Name + every question answered (the comment stays optional). */
 export function personaComplete(p: PersonaData): boolean {
-  return p.name.trim() !== "" && PERSONA_QUESTIONS.every((_, i) => (p.answers?.[i] ?? -1) >= 0);
+  return p.name.trim() !== "" && PERSONA_QUESTIONS.every((_, i) => (p.answers?.[i] ?? []).length > 0);
 }
 
 /** Plain-text version for the clipboard / PDF and for pasting into the backpack. */
