@@ -2,7 +2,7 @@ import { type ReactNode } from "react";
 import { useRoute } from "wouter";
 import { useRoom } from "@/lib/useRoom";
 import { RoomBar, Board, PersonaIntake, PersonaOverview, BackpackScene, BackpackView } from "@/components/game-parts";
-import { ROUNDS, BACKPACK_FRAMING, stepInfo } from "@shared/content";
+import { ROUNDS, BACKPACK_FRAMING, stepInfo, roundTopic, roundOptions, roundOptionText } from "@shared/content";
 
 function reflectionHeader(perspective: number, personaName: string): string {
   return perspective === 0 ? "As yourself" : `As ${personaName || "your persona"}`;
@@ -36,7 +36,7 @@ export default function Game() {
 
   const answerText = (perspective: number, q: number): string | null => {
     const a = gameState.answers.find((x) => x.perspective === perspective && x.question === q);
-    return a ? ROUNDS[q].options[a.optionIndex] : null;
+    return a ? roundOptionText(q, perspective, a.optionIndex, a.otherText) : null;
   };
 
   // ---- Waiting ----
@@ -104,18 +104,18 @@ export default function Game() {
 
   // ---- Reflection question (yourself / persona) ----
   if (info.kind === "reflectionQ") {
-    const content = ROUNDS[info.question];
+    const opts = roundOptions(info.question, info.perspective);
     const chosen = gameState.answers.find((a) => a.perspective === info.perspective && a.question === info.question);
-    const otherIdx = content.options.indexOf("Other");
+    const otherIdx = opts.indexOf("Other");
     const otherChosen = chosen?.optionIndex === otherIdx;
     return shell(
       <>
         <div className="tg-round-line">
           <span className="tg-eyebrow">{reflectionHeader(info.perspective, persona.name)} · Question {info.question + 1} of {ROUNDS.length}</span>
         </div>
-        <h1 className="tg-topic">{content.topic}</h1>
+        <h1 className="tg-topic">{roundTopic(info.question, info.perspective)}</h1>
         <div className="tg-options">
-          {content.options.map((opt, i) => (
+          {opts.map((opt, i) => (
             <button key={i} className={`tg-opt-card ${chosen?.optionIndex === i ? "sel" : ""}`}
               onClick={() => room.setAnswer(info.perspective, info.question, i, i === otherIdx ? (chosen?.otherText ?? "") : "")}>
               {opt}
@@ -142,9 +142,9 @@ export default function Game() {
         <div className="tg-round-line"><span className="tg-eyebrow">Your answers so far</span></div>
         <h1 className="tg-topic" style={{ marginBottom: "1.4rem" }}>How you answered</h1>
         <div className="tg-recap">
-          {ROUNDS.map((r, q) => (
+          {ROUNDS.map((_r, q) => (
             <div className="tg-recap-row" key={q}>
-              <span className="tg-recap-q">{r.topic}</span>
+              <span className="tg-recap-q">{roundTopic(q, 0)}</span>
               <span className="tg-recap-a tg-serif">{answerText(0, q) ?? "—"}</span>
             </div>
           ))}

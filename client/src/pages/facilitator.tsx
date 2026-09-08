@@ -2,7 +2,7 @@ import { type ReactNode } from "react";
 import { useRoute } from "wouter";
 import { useRoom } from "@/lib/useRoom";
 import { RoomBar, Board, PersonaIntake, PersonaOverview, BackpackScene, BackpackView } from "@/components/game-parts";
-import { FRAMING, BACKPACK_FRAMING, ROUNDS, roundOptionText, stepInfo, isPersonaStep, personaRows, skipTarget, skipLabel } from "@shared/content";
+import { FRAMING, BACKPACK_FRAMING, ROUNDS, roundOptionText, roundTopic, stepInfo, isPersonaStep, personaRows, skipTarget, skipLabel } from "@shared/content";
 import { printHtml, esc } from "@/lib/print";
 import { backpackImageHtml } from "@/lib/backpack-svg";
 
@@ -36,14 +36,14 @@ export default function Facilitator() {
 
   const answerCell = (perspective: number, q: number) => {
     const a = gameState.answers.find((x) => x.perspective === perspective && x.question === q);
-    return (a ? roundOptionText(q, a.optionIndex, a.otherText) : null) ?? "—";
+    return (a ? roundOptionText(q, perspective, a.optionIndex, a.otherText) : null) ?? "—";
   };
   // ---- Export documents ----
   const boardDoc = () => {
     const labels = ["You", persona.name || "Persona"];
-    const rows = ROUNDS.map((r, q) => {
+    const rows = ROUNDS.map((_r, q) => {
       const cells = [0, 1].map((p) => `<td>${esc(answerCell(p, q))}</td>`).join("");
-      return `<tr><td class="q">${esc(r.topic)}</td>${cells}</tr>`;
+      return `<tr><td class="q">${esc(roundTopic(q, 0))}</td>${cells}</tr>`;
     }).join("");
     return `<p class="k">Reflection</p><h1>You vs your persona</h1>
       <p class="sub">Persona: ${esc(persona.name || "—")}</p>
@@ -188,9 +188,9 @@ export default function Facilitator() {
     label = "Reviewing their own answers";
     body = (
       <div className="tg-recap">
-        {ROUNDS.map((r, q) => (
+        {ROUNDS.map((_r, q) => (
           <div className="tg-recap-row" key={q}>
-            <span className="tg-recap-q">{r.topic}</span>
+            <span className="tg-recap-q">{roundTopic(q, 0)}</span>
             <span className="tg-recap-a tg-serif">{answerCell(0, q)}</span>
           </div>
         ))}

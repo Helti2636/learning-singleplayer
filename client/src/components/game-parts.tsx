@@ -1,7 +1,7 @@
 import { ArrowLeft, Check, Copy } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import type { Answer, Persona } from "@shared/schema";
-import { ROUNDS, PERSONA_QUESTIONS, personaRows, roundOptionText, ITEMS, itemName, CUSTOM_PREFIX, CUSTOM_MAX_LEN } from "@shared/content";
+import { ROUNDS, PERSONA_QUESTIONS, personaRows, roundOptionText, roundTopic, ITEMS, itemName, CUSTOM_PREFIX, CUSTOM_MAX_LEN } from "@shared/content";
 import { ItemIcon } from "@/components/item-icon";
 
 /** Column labels for the two perspectives: you, then the persona. */
@@ -35,7 +35,7 @@ function AvatarHead() {
 
 export function answerText(answers: Answer[], perspective: number, question: number): string | null {
   const a = answers.find((x) => x.perspective === perspective && x.question === question);
-  return a ? roundOptionText(question, a.optionIndex, a.otherText) : null;
+  return a ? roundOptionText(question, perspective, a.optionIndex, a.otherText) : null;
 }
 
 export function RoomBar({
@@ -80,9 +80,9 @@ export function Board({ answers, persona }: { answers: Answer[]; persona: Person
   const labels = perspectiveLabels(persona);
   return (
     <div className="tg-board">
-      {ROUNDS.map((r, q) => (
+      {ROUNDS.map((_r, q) => (
         <div className="tg-board-row" key={q}>
-          <div className="tg-board-qlabel">{r.topic}</div>
+          <div className="tg-board-qlabel">{roundTopic(q, 0)}</div>
           <div className="tg-board-cells">
             {[0, 1].map((p) => {
               const text = answerText(answers, p, q);

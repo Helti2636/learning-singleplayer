@@ -2,8 +2,10 @@
 // Three fixed rounds, always in this order, with a fixed pool of answers each.
 
 export interface RoundContent {
-  topic: string;
-  options: string[];
+  topic: string;             // question from the "yourself" perspective
+  topicPersona: string;      // question from the persona perspective
+  options: string[];         // answer options (self perspective)
+  optionsPersona?: string[]; // answer options for the persona perspective (falls back to `options`)
 }
 
 // The umbrella framing that sits over all three rounds.
@@ -15,34 +17,53 @@ export const FRAMING = {
 
 export const ROUNDS: RoundContent[] = [
   {
-    topic: "What learning activities matter most to you?",
+    topic: "What mattered most to you?",
+    topicPersona: "What would matter most to them?",
     options: [
-      "Practical exercises",
-      "Expert knowledge",
-      "Peer discussion",
-      "Reflection time",
-      "Job aids & resources",
+      "Having the opportunity to practice through activities or exercises.",
+      "Engaging in meaningful discussions with peers.",
+      "Gaining valuable insights from an expert.",
+      "Having dedicated time for reflection.",
+      "Receiving personalized feedback or coaching.",
+      "Solving real-world challenges relevant to me.",
+      "Being exposed to new ideas and perspectives.",
+      "Working collaboratively with others on a shared task.",
     ],
   },
   {
-    topic: "How long are you expecting the training to be, and how is that time distributed?",
+    topic: "What was the experience structure?",
+    topicPersona: "What should be the experience structure?",
     options: [
-      "Short and efficient (one-timer)",
-      "Deep and comprehensive (series of short sessions)",
-      "Deep and comprehensive (one long immersive session)",
-      "Short and self-paced",
-      "Deep and comprehensive and self-paced",
-      "Blended: self-learning objectives + in-person scheduled session",
+      "Short and focused (single in-person session).",
+      "Deep and comprehensive (series of shorter in-person sessions).",
+      "Deep and comprehensive (single immersive in-person session).",
+      "Short and self-paced (online course).",
+      "Deep and comprehensive, self-paced (extended online course).",
+      "Blended learning (mix of online and live sessions).",
     ],
   },
   {
-    topic: "What would make this training a success?",
+    topic: "What made this experience impactful?",
+    topicPersona: "What would make this experience impactful?",
     options: [
-      "Knowledge gained",
-      "Behaviour change",
-      "Team performance",
-      "Learner satisfaction",
-      "Organizational impact",
+      "It changed the behaviour.",
+      "I learned something new.",
+      "It helped me work more efficiently.",
+      "It increased my confidence in my role.",
+      "It helped me solve a real challenge I was facing.",
+      "It strengthened my relationships or collaboration with others.",
+      "It motivated me to continue learning.",
+      "It contributed to my professional growth or career development.",
+    ],
+    optionsPersona: [
+      "It changed the behaviour.",
+      "They learned something new.",
+      "It helped them to work more efficiently.",
+      "It increased confidence in their role.",
+      "It helped them to solve a real challenge they were facing.",
+      "It strengthened their relationships or collaboration with others.",
+      "It motivated them to continue learning.",
+      "It contributed to their professional growth or career development.",
     ],
   },
 ];
@@ -51,11 +72,24 @@ export const ROUNDS: RoundContent[] = [
 // free-text field, so people can give an answer that isn't in the list.
 for (const r of ROUNDS) {
   if (!r.options.includes("Other")) r.options = [...r.options, "Other"];
+  if (r.optionsPersona && !r.optionsPersona.includes("Other")) r.optionsPersona = [...r.optionsPersona, "Other"];
+}
+
+/** The question wording for a perspective (0 = yourself, 1 = the persona). */
+export function roundTopic(question: number, perspective: number): string {
+  const r = ROUNDS[question];
+  return perspective === 1 ? r.topicPersona : r.topic;
+}
+
+/** The answer options for a perspective (0 = yourself, 1 = the persona). */
+export function roundOptions(question: number, perspective: number): string[] {
+  const r = ROUNDS[question];
+  return perspective === 1 ? (r.optionsPersona ?? r.options) : r.options;
 }
 
 /** Display text for a reflection answer — the chosen option, or the free text when "Other". */
-export function roundOptionText(question: number, optionIndex: number, otherText?: string): string | null {
-  const opts = ROUNDS[question]?.options;
+export function roundOptionText(question: number, perspective: number, optionIndex: number, otherText?: string): string | null {
+  const opts = roundOptions(question, perspective);
   if (!opts || optionIndex == null || optionIndex < 0 || optionIndex >= opts.length) return null;
   const opt = opts[optionIndex];
   if (opt === "Other") return (otherText ?? "").trim() || "Other";
