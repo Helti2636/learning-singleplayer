@@ -48,7 +48,7 @@ export const ROUNDS: RoundContent[] = [
     topic: "What made this experience impactful?",
     topicPersona: "What would make this experience impactful?",
     options: [
-      "It changed the behaviour.",
+      "It changed my behaviour.",
       "I learned something new.",
       "It helped me work more efficiently.",
       "It increased my confidence in my role.",
@@ -170,8 +170,13 @@ export interface PersonaQuestion {
   maxSelect: number;    // 1 = single choice; >1 = pick up to this many
 }
 
-/** The single catch-all option; picking it reveals a free-text field. */
-export const PERSONA_OTHER = "Other/I don’t know/Not applicable";
+/**
+ * The single catch-all option; picking it reveals a free-text field.
+ * Slash convention for every persona option: a non-breaking space BEFORE the
+ * slash and a normal space after ("A\u00a0/ B"). It reads as "A / B" but the
+ * line can only ever break AFTER the slash, never leaving a "/" line-initial.
+ */
+export const PERSONA_OTHER = "Other\u00a0/ I don’t know\u00a0/ Not applicable";
 export function isOtherOption(option: string): boolean {
   return option.startsWith("Other");
 }
@@ -187,8 +192,8 @@ export const PERSONA_QUESTIONS: PersonaQuestion[] = [
       "Professional (P1-P2)",
       "Professional (P3-P5)",
       "Director (D1-D2)",
-      "Senior Leader (ASG/USG)",
-      "Consultant / Individual Contractor",
+      "Senior Leader (ASG\u00a0/ USG)",
+      "Consultant\u00a0/ Individual Contractor",
       "UN Volunteer (UNV)",
       PERSONA_OTHER,
     ],
@@ -301,16 +306,16 @@ export const PERSONA_QUESTIONS: PersonaQuestion[] = [
     prompt: "Where is this learner most likely to find out about learning opportunities?",
     maxSelect: 3,
     options: [
-      "Email / broadcast messages",
-      "iSeek / UN intranet",
+      "Email\u00a0/ broadcast messages",
+      "iSeek\u00a0/ UN intranet",
       "Microsoft Teams",
-      "Viva Engage / internal communities",
+      "Viva Engage\u00a0/ internal communities",
       "UN Knowledge Gateway",
       "Manager or supervisor",
-      "Colleagues / word of mouth",
-      "Communities of practice / professional networks",
-      "Town halls / staff meetings / events",
-      "Learning platform / learning catalogue",
+      "Colleagues\u00a0/ word of mouth",
+      "Communities of practice\u00a0/ professional networks",
+      "Town halls\u00a0/ staff meetings\u00a0/ events",
+      "Learning platform\u00a0/ learning catalogue",
       PERSONA_OTHER,
     ],
   },

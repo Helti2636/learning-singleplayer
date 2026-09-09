@@ -128,7 +128,23 @@ export default function Facilitator() {
       <>
         <div className="tg-round-line"><span className="tg-eyebrow">Complete · {persona.name || "the persona"}</span></div>
         <h1 className="tg-topic" style={{ marginBottom: "1.4rem" }}>Session complete</h1>
+
+        {/* Same full wrap-up the participant sees: reflection, backpacks, persona card */}
+        <div className="tg-round-line"><span className="tg-eyebrow">Reflection · them ↔ {persona.name || "the persona"}</span></div>
+        <h1 className="tg-topic" style={{ marginBottom: "1.4rem" }}>How the answers compare</h1>
+        <Board answers={gameState.answers} persona={persona} />
+
+        <div className="tg-round-line" style={{ marginTop: "2.4rem" }}><span className="tg-eyebrow">Backpacks · them ↔ {persona.name || "the persona"}</span></div>
+        <h1 className="tg-topic" style={{ marginBottom: "1.4rem" }}>What was packed</h1>
+        <div className="bp-compare">
+          <BackpackView title="Them" items={gameState.backpackSelf} maxItems={gameState.maxItems} />
+          <BackpackView title={persona.name || "Persona"} items={gameState.backpackPersona} maxItems={gameState.maxItems} />
+        </div>
+
+        <div className="tg-round-line" style={{ marginTop: "2.4rem" }}><span className="tg-eyebrow">The learning persona</span></div>
+        <h1 className="tg-topic" style={{ marginBottom: "1.4rem" }}>{persona.name || "The persona"}</h1>
         <PersonaOverview persona={persona} />
+
         <div className="tg-controls" style={{ marginTop: "1.6rem" }}>
           <div className="buttons">
             <button className="tg-btn ghost" onClick={() => printHtml("Learning persona", personaCardDoc())}>Save persona card (PDF)</button>
@@ -162,7 +178,7 @@ export default function Facilitator() {
     const isController = myId === gameState.controllerId;
     const nextDisabled =
       info.kind === "personaName" ? persona.name.trim() === ""
-      : info.kind === "personaQuestion" ? (persona.answers?.[info.personaIndex] ?? -1) < 0
+      : info.kind === "personaQuestion" ? (persona.answers?.[info.personaIndex] ?? []).length === 0
       : false;
     const driverLabel = participant?.name || "Your participant";
     return shell(
@@ -181,6 +197,10 @@ export default function Facilitator() {
   // ---- Everything else: follow along (the participant drives) ----
   let label = "Following along";
   let body: ReactNode = null;
+  // Review screens: nothing to fill in, the step just has to be moved on from —
+  // so the facilitator can advance too instead of depending on the participant.
+  const canAdvance = info.kind === "selfRecap" || info.kind === "personaReveal"
+    || info.kind === "reflectionCompare" || info.kind === "backpackCompare";
   if (info.kind === "reflectionQ") {
     label = `${info.perspective === 0 ? "As themselves" : `As ${persona.name || "the persona"}`} · Question ${info.question + 1} of ${ROUNDS.length}`;
     body = <Board answers={gameState.answers} persona={persona} />;
@@ -226,6 +246,12 @@ export default function Facilitator() {
       <div className="tg-controls"><div className="buttons">
         {skipBtn}
         {saveProgressBtn}
+        {canAdvance && (
+          <>
+            <button className="tg-btn ghost" onClick={() => room.setStep(step - 1)}>← Back</button>
+            <button className="tg-btn" onClick={() => room.setStep(step + 1)}>Next →</button>
+          </>
+        )}
       </div></div>
     </>
   );
