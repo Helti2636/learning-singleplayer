@@ -1,6 +1,6 @@
 import type { GameState, Persona } from "@shared/schema";
 import {
-  TOTAL_STEPS, END_STEP, ROUNDS, isPersonaStep, isFacilitatorStep, stepInfo, skipTarget,
+  TOTAL_STEPS, END_STEP, ROUNDS, isPersonaStep, isFacilitatorStep, isReviewStep, stepInfo, skipTarget,
   emptyPersona, PERSONA_QUESTIONS, ITEM_BY_ID, MAX_ITEMS,
   isCustomItem, customItemText, CUSTOM_PREFIX, CUSTOM_MAX_LEN,
 } from "@shared/content";
@@ -120,7 +120,8 @@ export class MemStorage {
     const toIntake = isPersonaStep(clamped);
     // The participant always drives navigation; on facilitator-active steps (the
     // demo) and the persona intake, the facilitator may also step through.
-    const facActive = fromIntake || toIntake || isFacilitatorStep(room.step) || isFacilitatorStep(clamped);
+    const facActive = fromIntake || toIntake || isFacilitatorStep(room.step) || isFacilitatorStep(clamped)
+      || isReviewStep(room.step); // review screens: either side may move on
     const canNavigate = this.isParticipant(room, byId) || (this.isFacilitator(room, byId) && facActive);
     if (!canNavigate) return false;
     room.step = clamped;

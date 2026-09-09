@@ -495,6 +495,16 @@ export function isFacilitatorStep(step: number): boolean {
 }
 
 /**
+ * Review screens: nothing to fill in, the step only has to be moved on from.
+ * The facilitator may navigate here too, so the room never depends on the
+ * participant pressing Next (e.g. on the persona card).
+ */
+export function isReviewStep(step: number): boolean {
+  const k = stepInfo(step).kind;
+  return k === "selfRecap" || k === "personaReveal" || k === "reflectionCompare" || k === "backpackCompare";
+}
+
+/**
  * If the facilitator may skip the current block, the step to jump to (the next
  * activity, past the block's own review). Persona creation is never skippable.
  * null → no skip available on this step.

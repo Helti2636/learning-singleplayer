@@ -2,7 +2,7 @@ import { type ReactNode } from "react";
 import { useRoute } from "wouter";
 import { useRoom } from "@/lib/useRoom";
 import { RoomBar, Board, PersonaIntake, PersonaOverview, BackpackScene, BackpackView } from "@/components/game-parts";
-import { FRAMING, BACKPACK_FRAMING, ROUNDS, roundOptionText, roundTopic, roundTopicNeutral, stepInfo, isPersonaStep, personaRows, skipTarget, skipLabel } from "@shared/content";
+import { FRAMING, BACKPACK_FRAMING, ROUNDS, roundOptionText, roundTopic, roundTopicNeutral, stepInfo, isPersonaStep, isReviewStep, personaRows, skipTarget, skipLabel } from "@shared/content";
 import { printHtml, esc } from "@/lib/print";
 import { backpackImageHtml } from "@/lib/backpack-svg";
 
@@ -199,8 +199,7 @@ export default function Facilitator() {
   let body: ReactNode = null;
   // Review screens: nothing to fill in, the step just has to be moved on from —
   // so the facilitator can advance too instead of depending on the participant.
-  const canAdvance = info.kind === "selfRecap" || info.kind === "personaReveal"
-    || info.kind === "reflectionCompare" || info.kind === "backpackCompare";
+  const canAdvance = isReviewStep(step);
   if (info.kind === "reflectionQ") {
     label = `${info.perspective === 0 ? "As themselves" : `As ${persona.name || "the persona"}`} · Question ${info.question + 1} of ${ROUNDS.length}`;
     body = <Board answers={gameState.answers} persona={persona} />;
