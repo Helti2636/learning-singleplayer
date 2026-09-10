@@ -366,6 +366,13 @@ export const PERSONA_QUESTIONS: PersonaQuestion[] = [
   },
 ];
 
+/**
+ * Shown on its own screen right after the persona card, for everyone. It is
+ * discussed out loud only — nothing is typed, stored or exported.
+ */
+export const PERSONA_DISCUSSION =
+  "What will your target audience start doing / stop doing / do differently thanks to your learning solution?";
+
 export interface PersonaData {
   name: string;
   answers: number[][];   // selected option indices per question (multi-select)
@@ -429,6 +436,7 @@ export function personaPlainText(p: PersonaData): string {
 //  PERSONA_Q_START..         persona questions (11)
 //  PERSONA_COMMENT           persona comment
 //  PERSONA_REVEAL            the persona card
+//  PERSONA_DISCUSS           one question to discuss out loud (no input)
 //  REFLECT_PERSONA_START..   reflection · as the persona
 //  REFLECT_COMPARE           reflection: you vs the persona
 //  BACKPACK_PERSONA          pack the persona's backpack
@@ -442,13 +450,14 @@ export const BACKPACK_SELF_STEP = BACKPACK_DEMO_STEP + 1;        // 6
 export const PERSONA_NAME_STEP = BACKPACK_SELF_STEP + 1;         // 7
 export const PERSONA_Q_START = PERSONA_NAME_STEP + 1;            // 8
 export const PERSONA_COMMENT_STEP = PERSONA_Q_START + PQ;        // 19
-export const PERSONA_REVEAL_STEP = PERSONA_COMMENT_STEP + 1;     // 20
-export const REFLECT_PERSONA_START = PERSONA_REVEAL_STEP + 1;    // 21
-export const REFLECT_COMPARE_STEP = REFLECT_PERSONA_START + TOTAL_ROUNDS; // 24
-export const BACKPACK_PERSONA_STEP = REFLECT_COMPARE_STEP + 1;   // 25
-export const BACKPACK_COMPARE_STEP = BACKPACK_PERSONA_STEP + 1;  // 26
-export const END_STEP = BACKPACK_COMPARE_STEP + 1;               // 27
-export const TOTAL_STEPS = END_STEP + 1;                         // 28
+export const PERSONA_REVEAL_STEP = PERSONA_COMMENT_STEP + 1;     // 21
+export const PERSONA_DISCUSS_STEP = PERSONA_REVEAL_STEP + 1;     // 22
+export const REFLECT_PERSONA_START = PERSONA_DISCUSS_STEP + 1;   // 23
+export const REFLECT_COMPARE_STEP = REFLECT_PERSONA_START + TOTAL_ROUNDS; // 26
+export const BACKPACK_PERSONA_STEP = REFLECT_COMPARE_STEP + 1;   // 27
+export const BACKPACK_COMPARE_STEP = BACKPACK_PERSONA_STEP + 1;  // 28
+export const END_STEP = BACKPACK_COMPARE_STEP + 1;               // 29
+export const TOTAL_STEPS = END_STEP + 1;                         // 30
 
 export type StepKind =
   | "intro"
@@ -460,6 +469,7 @@ export type StepKind =
   | "personaQuestion"
   | "personaComment"
   | "personaReveal"
+  | "personaDiscuss"
   | "reflectionCompare"
   | "backpackPersona"
   | "backpackCompare"
@@ -477,6 +487,7 @@ export function stepInfo(step: number): { kind: StepKind; perspective: number; q
   if (step < PERSONA_COMMENT_STEP) return { kind: "personaQuestion", perspective: -1, question: -1, personaIndex: step - PERSONA_Q_START };
   if (step === PERSONA_COMMENT_STEP) return { kind: "personaComment", ...base };
   if (step === PERSONA_REVEAL_STEP) return { kind: "personaReveal", ...base };
+  if (step === PERSONA_DISCUSS_STEP) return { kind: "personaDiscuss", ...base };
   if (step < REFLECT_COMPARE_STEP) return { kind: "reflectionQ", perspective: 1, question: step - REFLECT_PERSONA_START, personaIndex: -1 };
   if (step === REFLECT_COMPARE_STEP) return { kind: "reflectionCompare", ...base };
   if (step === BACKPACK_PERSONA_STEP) return { kind: "backpackPersona", ...base };
@@ -501,7 +512,7 @@ export function isFacilitatorStep(step: number): boolean {
  */
 export function isReviewStep(step: number): boolean {
   const k = stepInfo(step).kind;
-  return k === "selfRecap" || k === "personaReveal" || k === "reflectionCompare" || k === "backpackCompare";
+  return k === "selfRecap" || k === "personaReveal" || k === "personaDiscuss" || k === "reflectionCompare" || k === "backpackCompare";
 }
 
 /**

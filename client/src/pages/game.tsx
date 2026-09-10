@@ -1,8 +1,8 @@
 import { type ReactNode } from "react";
 import { useRoute } from "wouter";
 import { useRoom } from "@/lib/useRoom";
-import { RoomBar, Board, PersonaIntake, PersonaOverview, BackpackScene, BackpackView } from "@/components/game-parts";
-import { ROUNDS, BACKPACK_FRAMING, stepInfo, roundTopic, roundOptions, roundOptionText } from "@shared/content";
+import { RoomBar, Board, PersonaIntake, PersonaOverview, BackpackScene, BackpackView, DiscussCard } from "@/components/game-parts";
+import { ROUNDS, BACKPACK_FRAMING, PERSONA_DISCUSSION, stepInfo, roundTopic, roundOptions, roundOptionText } from "@shared/content";
 
 function reflectionHeader(perspective: number, personaName: string): string {
   return perspective === 0 ? "As yourself" : `As ${personaName || "your persona"}`;
@@ -215,6 +215,16 @@ export default function Game() {
           Take a moment — next you’ll go through the same steps as {persona.name || "them"}.
         </p>
         <PersonaOverview persona={persona} />
+        <NavBar onBack={() => goto(step - 1)} onNext={() => goto(step + 1)} nextDisabled={false} />
+      </>
+    );
+  }
+
+  // ---- Discuss out loud (one question, no input) ----
+  if (info.kind === "personaDiscuss") {
+    return shell(
+      <>
+        <DiscussCard eyebrow={`Discuss together · ${persona.name || "your persona"}`} question={PERSONA_DISCUSSION} />
         <NavBar onBack={() => goto(step - 1)} onNext={() => goto(step + 1)} nextDisabled={false} />
       </>
     );

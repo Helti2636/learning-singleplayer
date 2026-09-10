@@ -340,3 +340,14 @@ textarea.tg-input{resize:vertical; min-height:5.5rem; font-family:var(--tg-sans)
 @media (prefers-reduced-motion:reduce){
   .tg-app *, .tg-spin{transition:none !important; animation:none !important;}
 }
+
+/* ---- Discussion card (one question, talked through out loud) ---- */
+.tg-discuss{
+  background:var(--tg-surface); border:1px solid var(--tg-line); border-radius:16px;
+  padding:clamp(2.2rem,6vw,4rem) clamp(1.4rem,4vw,2.6rem); text-align:center;
+  display:flex; flex-direction:column; align-items:center; gap:1rem;
+}
+.tg-discuss-q{
+  font-family:var(--tg-serif); font-size:clamp(1.5rem,3.6vw,2.3rem); line-height:1.25;
+  max-width:30ch; margin:0 auto; text-wrap:balance;
+}

@@ -434,3 +434,13 @@ export function BackpackView({ title, items, maxItems }: { title: string; items:
     </div>
   );
 }
+
+/** One question to talk through out loud — nothing to fill in, nothing stored. */
+export function DiscussCard({ eyebrow, question }: { eyebrow: string; question: string }) {
+  return (
+    <div className="tg-discuss">
+      <span className="tg-eyebrow">{eyebrow}</span>
+      <p className="tg-discuss-q">{question}</p>
+    </div>
+  );
+}

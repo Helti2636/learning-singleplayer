@@ -1,8 +1,8 @@
 import { type ReactNode } from "react";
 import { useRoute } from "wouter";
 import { useRoom } from "@/lib/useRoom";
-import { RoomBar, Board, PersonaIntake, PersonaOverview, BackpackScene, BackpackView } from "@/components/game-parts";
-import { FRAMING, BACKPACK_FRAMING, ROUNDS, roundOptionText, roundTopic, roundTopicNeutral, stepInfo, isPersonaStep, isReviewStep, personaRows, skipTarget, skipLabel } from "@shared/content";
+import { RoomBar, Board, PersonaIntake, PersonaOverview, BackpackScene, BackpackView, DiscussCard } from "@/components/game-parts";
+import { FRAMING, BACKPACK_FRAMING, ROUNDS, PERSONA_DISCUSSION, roundOptionText, roundTopic, roundTopicNeutral, stepInfo, isPersonaStep, isReviewStep, personaRows, skipTarget, skipLabel } from "@shared/content";
 import { printHtml, esc } from "@/lib/print";
 import { backpackImageHtml } from "@/lib/backpack-svg";
 
@@ -221,6 +221,9 @@ export default function Facilitator() {
   } else if (info.kind === "personaReveal") {
     label = "Meeting the persona";
     body = <PersonaOverview persona={persona} />;
+  } else if (info.kind === "personaDiscuss") {
+    label = "Discussing the persona";
+    body = <DiscussCard eyebrow={`Discuss together · ${persona.name || "the persona"}`} question={PERSONA_DISCUSSION} />;
   } else if (info.kind === "reflectionCompare") {
     label = "Comparing you vs the persona";
     body = <Board answers={gameState.answers} persona={persona} />;
